@@ -1,9 +1,6 @@
 # Stage 1: Install Node.js
 FROM node:20 as node-stage
 
-# Install necessary dependencies for Node.js environment
-WORKDIR /home
-
 # Verify Node.js installation
 RUN node -v
 RUN npm -v
@@ -76,8 +73,6 @@ RUN rustc --version
 RUN cargo nextest --version
 RUN sdkmanager --list
 
-# Set the working directory
-WORKDIR /home
 
 EXPOSE 8081
 

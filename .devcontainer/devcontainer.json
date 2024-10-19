@@ -4,6 +4,6 @@
     "dockerfile": "Dockerfile",
     "context": "."
   },
-  "forwardPorts": [8081],
-  "remoteUser": "root"
+  "remoteUser": "root",
+  "runArgs": ["--network=host"]
 }
