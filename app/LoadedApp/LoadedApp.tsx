@@ -1991,7 +1991,6 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
                     setUaAddress={this.setUaAddress}
                     toggleMenuDrawer={this.toggleMenuDrawer}
                     syncingStatusMoreInfoOnClick={this.syncingStatusMoreInfoOnClick}
-                    setPrivacyOption={this.setPrivacyOption}
                     setUfvkViewModalVisible={this.setUfvkViewModalVisible}
                   />
                 )}
@@ -2036,7 +2035,6 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
                         setUaAddress={this.setUaAddress}
                         toggleMenuDrawer={this.toggleMenuDrawer}
                         syncingStatusMoreInfoOnClick={this.syncingStatusMoreInfoOnClick}
-                        setPrivacyOption={this.setPrivacyOption}
                         setUfvkViewModalVisible={this.setUfvkViewModalVisible}
                       />
                     )}

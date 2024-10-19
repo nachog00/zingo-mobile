@@ -63,12 +63,7 @@ describe('Component Receive - test', () => {
     const onFunction = jest.fn();
     const receive = render(
       <ContextAppLoadedProvider value={state}>
-        <Receive
-          setUaAddress={onFunction}
-          toggleMenuDrawer={onFunction}
-          setPrivacyOption={onFunction}
-          syncingStatusMoreInfoOnClick={onFunction}
-        />
+        <Receive setUaAddress={onFunction} toggleMenuDrawer={onFunction} syncingStatusMoreInfoOnClick={onFunction} />
       </ContextAppLoadedProvider>,
     );
     expect(receive.toJSON()).toMatchSnapshot();

@@ -120,23 +120,17 @@ const SingleAddress: React.FunctionComponent<SingleAddressProps> = ({ address, i
                     )}
                   </>
                 ) : (
-                  <>
-                    {privacy ? (
-                      <QRCode value={address} size={200} ecl="L" backgroundColor={colors.text} />
-                    ) : (
-                      <QRCode
-                        value={address}
-                        size={200}
-                        ecl="L"
-                        backgroundColor={colors.text}
-                        logo={require('../../assets/img/logobig-zingo.png')}
-                        logoSize={30}
-                        logoBackgroundColor={colors.text}
-                        logoBorderRadius={5} /* android not soported */
-                        logoMargin={3}
-                      />
-                    )}
-                  </>
+                  <QRCode
+                    value={address}
+                    size={200}
+                    ecl="L"
+                    backgroundColor={colors.text}
+                    logo={require('../../assets/img/logobig-zingo.png')}
+                    logoSize={30}
+                    logoBackgroundColor={colors.text}
+                    logoBorderRadius={5} /* android not soported */
+                    logoMargin={3}
+                  />
                 )}
               </TouchableOpacity>
             </View>
