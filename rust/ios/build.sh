@@ -1,5 +1,7 @@
 #!/bin/bash
 
+ln -s $(which node) /usr/local/bin/node
+
 cd ../lib
 cargo run --release --bin uniffi-bindgen generate ../lib/src/zingo.udl --language swift --out-dir ./Generated
 cargo lipo --release --targets aarch64-apple-ios x86_64-apple-ios
