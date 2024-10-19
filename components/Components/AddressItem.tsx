@@ -32,7 +32,6 @@ type AddressItemProps = {
   withSendIcon?: boolean;
   setSendPageState?: (s: SendPageStateClass) => void;
   addressProtected?: boolean;
-  color?: string;
 };
 
 const AddressItem: React.FunctionComponent<AddressItemProps> = ({
@@ -45,7 +44,6 @@ const AddressItem: React.FunctionComponent<AddressItemProps> = ({
   openModal,
   setSendPageState,
   addressProtected,
-  color,
 }) => {
   const context = useContext(ContextAppLoaded);
   const {
@@ -113,19 +111,11 @@ const AddressItem: React.FunctionComponent<AddressItemProps> = ({
               }
             }}>
             <View style={{ display: 'flex', flexDirection: 'column', flexWrap: 'wrap' }}>
-              {!expandContact && numLinesContact > 1 && (
-                <RegText color={color ? color : colors.primary}>{Utils.trimToSmall(contact, 7)}</RegText>
-              )}
-              {!expandContact && numLinesContact === 1 && (
-                <RegText color={color ? color : colors.primary}>{contact}</RegText>
-              )}
+              {!expandContact && numLinesContact > 1 && <RegText>{Utils.trimToSmall(contact, 7)}</RegText>}
+              {!expandContact && numLinesContact === 1 && <RegText>{contact}</RegText>}
               {expandContact &&
                 Utils.splitStringIntoChunks(contact, Number(numLinesContact.toFixed(0))).map(
-                  (c: string, idx: number) => (
-                    <RegText color={color ? color : colors.primary} key={idx}>
-                      {c}
-                    </RegText>
-                  ),
+                  (c: string, idx: number) => <RegText key={idx}>{c}</RegText>,
                 )}
             </View>
           </TouchableOpacity>

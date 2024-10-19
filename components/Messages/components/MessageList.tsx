@@ -146,14 +146,19 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
   }, [valueTransfers, numVt, addressFilter]);
 
   useEffect(() => {
-    setLoadMoreButton(numVt < (valueTransfers ? valueTransfers.length : 0));
+    const vt = valueTransfers
+      ? valueTransfers.filter(
+          (a: ValueTransferType) => a.memos && a.memos.length > 0 && addressFilter(a.address, a.memos),
+        )
+      : [];
+    setLoadMoreButton(numVt < vt.length);
     setValueTransfersSorted(fetchValueTransfersSorted);
     if (loading) {
       setTimeout(() => {
         setLoading(false);
       }, 500);
     }
-  }, [fetchValueTransfersSorted, loading, numVt, valueTransfers]);
+  }, [addressFilter, fetchValueTransfersSorted, loading, numVt, valueTransfers]);
 
   useEffect(() => {
     if (scrollToBottom) {
@@ -251,7 +256,13 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
         <ValueTransferDetail
           index={valueTransferDetailIndex}
           length={valueTransfersSorted.length}
-          totalLength={valueTransfers ? valueTransfers.length : 0}
+          totalLength={
+            valueTransfers
+              ? valueTransfers.filter(
+                  (a: ValueTransferType) => a.memos && a.memos.length > 0 && addressFilter(a.address, a.memos),
+                ).length
+              : 0
+          }
           vt={valueTransferDetail}
           closeModal={() => setValueTransferDetailModalShowing(false)}
           openModal={() => setValueTransferDetailModalShowing(true)}
