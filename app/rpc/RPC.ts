@@ -362,7 +362,7 @@ export default class RPC {
     // every 15 seconds the App try to Sync the new blocks.
     if (!this.refreshTimerID) {
       this.refreshTimerID = setInterval(() => {
-        console.log('++++++++++ interval try refresh 15 secs');
+        //console.log('++++++++++ interval try refresh 15 secs');
         this.refresh(false);
       }, 15 * 1000); // 15 seconds
       //console.log('create refresh timer', this.refreshTimerID);
@@ -372,7 +372,7 @@ export default class RPC {
     // every 5 seconds the App update all data
     if (!this.updateTimerID) {
       this.updateTimerID = setInterval(() => {
-        console.log('++++++++++ interval update 5 secs', this.timers);
+        //console.log('++++++++++ interval update 5 secs');
         this.sanitizeTimers();
         this.updateData();
       }, 5 * 1000); // 5 secs
@@ -394,11 +394,13 @@ export default class RPC {
       this.timers.splice(deleted[i], 1);
     }
 
-    await this.updateData();
+    // don't wait for this... it's faster.
+    this.updateData();
 
     // Call the refresh after configure to update the UI. Do it in a timeout
     // to allow the UI to render first
     setTimeout(() => {
+      //console.log('FIRST sync run');
       this.refresh(true);
     }, 1000);
   }
@@ -588,21 +590,21 @@ export default class RPC {
 
   async loadWalletData() {
     await this.fetchTandZandOValueTransfers();
-    console.log('RPC - 3.1 - fetch value transfers');
+    //console.log('RPC - 3.1 - fetch value transfers');
     await this.fetchAddresses();
-    console.log('RPC - 3.2 - fetch addresses');
+    //console.log('RPC - 3.2 - fetch addresses');
     await this.fetchTotalBalance();
-    console.log('RPC - 3.3 - fetch total balance');
+    //console.log('RPC - 3.3 - fetch total balance');
     await this.fetchInfoAndServerHeight();
-    console.log('RPC - 3.4 - fetch info & server height');
+    //console.log('RPC - 3.4 - fetch info & server height');
     await this.fetchWalletSettings();
-    console.log('RPC - 3.5 - fetch wallet settings');
+    //console.log('RPC - 3.5 - fetch wallet settings');
   }
 
   async updateData() {
     //console.log('Update data triggered');
     if (this.updateDataLock) {
-      console.log('RPC - Update Data lock, returning *****************************');
+      //console.log('RPC - Update Data lock, returning *****************************');
       return;
     }
 
@@ -612,13 +614,13 @@ export default class RPC {
       this.updateDataLock = true;
 
       await this.fetchWalletHeight();
-      console.log('RPC - 1 - fetch wallet height');
+      //console.log('RPC - 1 - fetch wallet height');
       await this.fetchWalletBirthday();
-      console.log('RPC - 2 - fetch wallet birthday');
+      //console.log('RPC - 2 - fetch wallet birthday');
 
       // And fetch the rest of the data.
       await this.loadWalletData();
-      console.log('RPC - 3 - fetch wallet Data');
+      //console.log('RPC - 3 - fetch wallet Data');
 
       //console.log(`Finished update data at ${lastServerBlockHeight}`);
       this.updateDataLock = false;
@@ -633,12 +635,12 @@ export default class RPC {
   async refresh(fullRefresh: boolean, fullRescan?: boolean) {
     // If we're in refresh, we don't overlap
     if (this.inRefresh) {
-      //console.log('in refresh is true');
+      //console.log('REFRESH ----> in refresh is true');
       return;
     }
 
     if (this.syncStatusTimerID) {
-      //console.log('syncStatusTimerID exists already');
+      //console.log('REFRESH ----> syncStatusTimerID exists already');
       return;
     }
 
@@ -647,7 +649,7 @@ export default class RPC {
     await this.fetchInfoAndServerHeight();
 
     if (!this.lastServerBlockHeight) {
-      //console.log('the last server block is zero');
+      //console.log('REFRESH ----> the last server block is zero');
       return;
     }
 
@@ -936,10 +938,10 @@ export default class RPC {
       this.timers.push(this.syncStatusTimerID);
     } else {
       // Already at the latest block
-      //console.log('Already have latest block, waiting for next refresh');
+      //console.log('REFRESH ----> Already have latest block, waiting for next refresh');
       // Here I know the sync process is over, I need to inform to the UI.
       this.fnSetSyncingStatus({
-        syncID: this.syncId,
+        syncID: this.syncId < 0 ? 0 : this.syncId,
         totalBatches: 0,
         currentBatch: 0,
         lastBlockWallet: this.lastWalletBlockHeight,

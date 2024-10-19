@@ -353,20 +353,10 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
   constructor(props: LoadingAppClassProps) {
     super(props);
 
-    let netInfo: NetInfoType = {} as NetInfoType;
-    NetInfo.fetch().then(state => {
-      //console.log(state);
-      netInfo = {
-        isConnected: state.isConnected,
-        type: state.type,
-        isConnectionExpensive: state.details && state.details.isConnectionExpensive,
-      };
-    });
-
     this.state = {
       // context
       navigation: props.navigation,
-      netInfo: netInfo,
+      netInfo: {} as NetInfoType,
       wallet: {} as WalletType,
       info: {} as InfoType,
       zecPrice: {} as ZecPriceType,
@@ -394,7 +384,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
       // state
       appStateStatus: AppState.currentState,
       screen: !!props.route.params && !!props.route.params.screen ? props.route.params.screen : 0,
-      actionButtonsDisabled: !netInfo.isConnected ? true : false,
+      actionButtonsDisabled: false,
       walletExists: false,
       customServerShow: false,
       customServerUri: '',
@@ -420,6 +410,18 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
   }
 
   componentDidMount = async () => {
+    const netInfoState = await NetInfo.fetch();
+    this.setState({
+      netInfo: {
+        isConnected: netInfoState.isConnected,
+        type: netInfoState.type,
+        isConnectionExpensive: netInfoState.details && netInfoState.details.isConnectionExpensive,
+      },
+      actionButtonsDisabled: !netInfoState.isConnected ? true : false,
+    });
+
+    //console.log('DID MOUNT APPLOADING...', netInfoState);
+
     // to start the App the first time in this session
     // the user have to pass the security of the device
     if (this.state.startingApp) {
@@ -1192,7 +1194,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
     } = this.state;
     const { colors } = this.props.theme;
 
-    //console.log('render loadingAppClass - 3', translate('version'));
+    //console.log('render loadingAppClass - 3', this.state.netInfo);
 
     const context = {
       // context

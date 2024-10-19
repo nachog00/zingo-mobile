@@ -466,6 +466,17 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
   }
 
   componentDidMount = async () => {
+    const netInfoState = await NetInfo.fetch();
+    this.setState({
+      netInfo: {
+        isConnected: netInfoState.isConnected,
+        type: netInfoState.type,
+        isConnectionExpensive: netInfoState.details && netInfoState.details.isConnectionExpensive,
+      },
+    });
+
+    //console.log('DID MOUNT APPLOADED...', netInfoState);
+
     this.clearToAddr();
 
     // Configure the RPC to start doing refreshes
@@ -1643,7 +1654,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       );
     };
 
-    console.log('render LoadedAppClass - 3', this.state.netInfo);
+    //console.log('render LoadedAppClass - 3', this.state.netInfo);
     //console.log('vt', valueTransfers);
     //console.log('ad', addresses);
     //console.log('ba', totalBalance);
