@@ -642,7 +642,9 @@ export default class RPC {
       return;
     }
 
-    await this.updateData();
+    await this.fetchWalletHeight();
+    await this.fetchWalletBirthday();
+    await this.fetchInfoAndServerHeight();
 
     if (!this.lastServerBlockHeight) {
       //console.log('the last server block is zero');
@@ -753,7 +755,9 @@ export default class RPC {
         // if the syncId change then reset the %
         if (this.prevSyncId !== this.syncId) {
           if (this.prevSyncId !== -1) {
-            await this.updateData();
+            await this.fetchWalletHeight();
+            await this.fetchWalletBirthday();
+            await this.fetchInfoAndServerHeight();
 
             await RPCModule.doSave();
 
@@ -881,7 +885,9 @@ export default class RPC {
           // here we can release the screen...
           this.keepAwake(false);
 
-          await this.updateData();
+          await this.fetchWalletHeight();
+          await this.fetchWalletBirthday();
+          await this.fetchInfoAndServerHeight();
 
           await RPCModule.doSave();
 
@@ -908,7 +914,9 @@ export default class RPC {
           if (this.prevBatchNum !== batchNum) {
             // if finished batches really fast, the App have to save the wallet delayed.
             if (this.prevBatchNum !== -1 && this.batches >= 1) {
-              await this.updateData();
+              await this.fetchWalletHeight();
+              await this.fetchWalletBirthday();
+              await this.fetchInfoAndServerHeight();
 
               await RPCModule.doSave();
               this.batches = 0;
@@ -1247,7 +1255,7 @@ export default class RPC {
         currentValueTransferList.kind =
           vt.kind === RPCValueTransfersKindEnum.memoToSelf
             ? ValueTransferKindEnum.MemoToSelf
-            : vt.kind === RPCValueTransfersKindEnum.sendToSelf
+            : vt.kind === RPCValueTransfersKindEnum.basic
             ? ValueTransferKindEnum.SendToSelf
             : vt.kind === RPCValueTransfersKindEnum.received
             ? ValueTransferKindEnum.Received
