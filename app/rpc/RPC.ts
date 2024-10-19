@@ -1265,6 +1265,8 @@ export default class RPC {
             ? ValueTransferKindEnum.Sent
             : vt.kind === RPCValueTransfersKindEnum.shield
             ? ValueTransferKindEnum.Shield
+            : vt.kind === RPCValueTransfersKindEnum.ephemeral320Tex
+            ? ValueTransferKindEnum.Ephemeral320Tex
             : undefined;
         currentValueTransferList.fee = (!vt.transaction_fee ? 0 : vt.transaction_fee) / 10 ** 8;
         currentValueTransferList.zecPrice = !vt.zec_price ? 0 : vt.zec_price;

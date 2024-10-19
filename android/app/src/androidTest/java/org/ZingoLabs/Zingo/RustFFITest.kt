@@ -374,7 +374,7 @@ class UpdateCurrentPriceAndValueTransfersFromSeed {
         // the value transfers have 3 items for 3 different txs
         // 1. Received - 1_000_000 - orchard (1 item)
         // 2. Sent - 110_000 - uregtest1zkuzfv5m3... (1 item)
-        // 3. sendToSelf - 10_000 (1 item)
+        // 3. memoToSelf - 10_000 (1 item)
         assertThat(valueTranfers.value_transfers.size).isEqualTo(3)
         // first item have to be a `Received`
         assertThat(valueTranfers.value_transfers[0].kind).isEqualTo("received")

@@ -205,4 +205,25 @@ describe('Component History ValueTransferDetail - test', () => {
     expect(num.length).toBe(2);
     screen.getByText('0.0001');
   });
+
+  test('History ValueTransferDetail - ephemeral-32-tex ValueTransfer', () => {
+    render(
+      <ContextAppLoadedProvider value={state}>
+        <ValueTransferDetail
+          index={4}
+          length={mockValueTransfers.length}
+          totalLength={mockValueTransfers.length}
+          vt={mockValueTransfers[5]}
+          closeModal={onClose}
+          openModal={onClose}
+          setPrivacyOption={onSetOption}
+          setSendPageState={onClose}
+          moveValueTransferDetail={onMove}
+        />
+      </ContextAppLoadedProvider>,
+    );
+    const num = screen.getAllByText('0.0009');
+    expect(num.length).toBe(2);
+    screen.getByText('0.0001');
+  });
 });
