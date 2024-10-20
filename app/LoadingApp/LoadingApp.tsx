@@ -521,25 +521,27 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                 // 3. UFVK - watch-only wallet
                 // 4. No keys - watch-only wallet (possibly an error)
 
+                let readOnly:boolean; 
+                if (
+                  walletKindJSON.kind === RPCWalletKindEnum.LoadedFromUnifiedFullViewingKey ||
+                  walletKindJSON.kind === RPCWalletKindEnum.NoKeysFound
+                ) {
+                  readOnly = true;
+                } else {
+                  readOnly = false;
+                }
                 // if the seed & birthday are not stored in Keychain/Keystore, do it now.
                 if (this.state.recoveryWalletInfoOnDevice) {
-                  if (
-                    walletKindJSON.kind === RPCWalletKindEnum.LoadedFromSeedPhrase ||
-                    walletKindJSON.kind === RPCWalletKindEnum.LoadedFromUnifiedSpendingKey
-                  ) {
-                    const wallet: WalletType = await RPC.rpcFetchWallet(false);
-                    await createUpdateRecoveryWalletInfo(wallet);
-                  }
+                  const wallet: WalletType = await RPC.rpcFetchWallet(readOnly);
+                  await createUpdateRecoveryWalletInfo(wallet);
                 } else {
                   // needs to delete the seed from the Keychain/Keystore, do it now.
-                  await removeRecoveryWalletInfo();
+                  if (this.state.hasRecoveryWalletInfoSaved) {
+                    await removeRecoveryWalletInfo();
+                  }
                 }
                 this.setState({
-                  readOnly:
-                    walletKindJSON.kind === RPCWalletKindEnum.LoadedFromUnifiedFullViewingKey ||
-                    walletKindJSON.kind === RPCWalletKindEnum.NoKeysFound
-                      ? true
-                      : false,
+                  readOnly: readOnly,
                   actionButtonsDisabled: false,
                 });
               } catch (e) {
@@ -585,7 +587,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
         // this means when the user have funds, the seed screen will show up.
         await SettingsFileImpl.writeSettings(SettingsNameEnum.basicFirstViewSeed, false);
         if (this.state.hasRecoveryWalletInfoSaved) {
-          // but first we need to check if exists some seed stored in the device from a previous installation (IOS)
+          // but first we need to check if exists some key stored in the device from a previous installation (IOS)
           await this.recoverRecoveryWalletInfo(false);
           // go to the initial menu, giving the opportunity to the user
           // to use the seed & birthday recovered from the device.
@@ -955,7 +957,9 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
         if (this.state.recoveryWalletInfoOnDevice) {
           await createUpdateRecoveryWalletInfo(wallet);
         } else {
-          await removeRecoveryWalletInfo();
+          if (this.state.hasRecoveryWalletInfoSaved) {
+            await removeRecoveryWalletInfo();
+          }
         }
         // basic mode -> same screen.
         this.setState(state => ({
@@ -1055,11 +1059,20 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
             // storing the seed/ufvk & birthday in KeyChain/KeyStore
             if (this.state.recoveryWalletInfoOnDevice) {
               if (type === RestoreFromTypeEnum.seedRestoreFrom) {
-                const wallet: WalletType = { seed: seedUfvk.toLowerCase(), birthday: Number(walletBirthday) };
-                await createUpdateRecoveryWalletInfo(wallet);
+                // here I have to store the seed/birthday in the device
+                // because the user is restoring from seed (same or different)
+                const walletSeed: WalletType = { seed: seedUfvk.toLowerCase(), birthday: Number(walletBirthday) };
+                await createUpdateRecoveryWalletInfo(walletSeed);
+              } else {
+                // here I have to store the ufvk in the device
+                // because the user is restoring from ufvk (same or different)
+                const walletUfvk: WalletType = { ufvk: seedUfvk.toLowerCase(), birthday: Number(walletBirthday) };
+                await createUpdateRecoveryWalletInfo(walletUfvk);
               }
             } else {
-              await removeRecoveryWalletInfo();
+              if (this.state.hasRecoveryWalletInfoSaved) {
+                await removeRecoveryWalletInfo();
+              }
             }
             // when restore a wallet never the user needs that the seed screen shows up with the first funds received.
             await SettingsFileImpl.writeSettings(SettingsNameEnum.basicFirstViewSeed, true);
@@ -1140,22 +1153,13 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
   };
 
   recoverRecoveryWalletInfo = async (security: boolean) => {
-    const resultBio = security ? await simpleBiometrics({ translate: this.props.translate }) : true;
-    // can be:
-    // - true      -> the user do pass the authentication
-    // - false     -> the user do NOT pass the authentication
-    // - undefined -> no biometric authentication available -> Passcode.
-    //console.log('BIOMETRIC --------> ', resultBio);
-    if (resultBio === false) {
-      // snack with Error & closing the menu.
-      this.addLastSnackbar({ message: this.props.translate('biometrics-error') as string });
-    } else {
-      // recover the wallet keys from the device
-      const wallet = await getRecoveryWalletInfo();
-      const txt = wallet.seed + '\n\n' + wallet.birthday;
+    // recover the wallet keys from the device
+    const wallet = await getRecoveryWalletInfo();
+    if (wallet.seed || wallet.ufvk) {
+      const txt = (wallet.seed || wallet.ufvk) + '\n\n' + wallet.birthday;
       Alert.alert(
         this.props.translate('loadedapp.walletseed-basic') as string,
-        (security ? '' : ((this.props.translate('loadingapp.recoverseedinstall') + '\n\n') as string)) + txt,
+        (security ? '' : ((this.props.translate('loadingapp.recoverkeysinstall') + '\n\n') as string)) + txt,
         [
           {
             text: this.props.translate('copy') as string,
@@ -1268,7 +1272,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                         options={
                           hasRecoveryWalletInfoSaved
                             ? [
-                                translate('loadingapp.recoverseed'),
+                                translate('loadingapp.recoverkeys'),
                                 translate('loadingapp.advancedmode'),
                                 translate('cancel'),
                               ]
@@ -1287,7 +1291,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                         destructiveIndex={5}
                         options={
                           hasRecoveryWalletInfoSaved
-                            ? [translate('loadingapp.recoverseed'), translate('loadingapp.custom'), translate('cancel')]
+                            ? [translate('loadingapp.recoverkeys'), translate('loadingapp.custom'), translate('cancel')]
                             : [translate('loadingapp.custom'), translate('cancel')]
                         }
                         actions={

@@ -37,7 +37,7 @@ import { isEqual } from 'lodash';
 import ChainTypeToggle from '../Components/ChainTypeToggle';
 import CheckBox from '@react-native-community/checkbox';
 import RNPickerSelect from 'react-native-picker-select';
-import { getStorageRecoveryWalletInfo, hasRecoveryWalletInfo } from '../../app/recoveryWalletInfo';
+import { hasRecoveryWalletInfo } from '../../app/recoveryWalletInfo';
 
 type SettingsProps = {
   closeModal: () => void;
@@ -199,7 +199,7 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
     (async () => {
       if (await hasRecoveryWalletInfo()) {
         setHasRecoveryWalletInfoSaved(true);
-        setStorageRecoveryWalletInfo(await getStorageRecoveryWalletInfo());
+        setStorageRecoveryWalletInfo(Platform.OS === GlobalConst.platformOSios ? 'KeyChain' : 'KeyStore');
       }
     })();
   }, [translate]);
