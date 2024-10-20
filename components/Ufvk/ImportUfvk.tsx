@@ -14,13 +14,11 @@ import { ThemeType } from '../../app/types';
 import { ContextAppLoading } from '../../app/context';
 import Header from '../Header';
 import RPCModule from '../../app/RPCModule';
-import { RPCParseViewKeyType } from '../../app/rpc/types/RPCParseViewKeyType';
 import moment from 'moment';
 import 'moment/locale/es';
 import 'moment/locale/pt';
 import 'moment/locale/ru';
-import { ButtonTypeEnum, CommandEnum, GlobalConst } from '../../app/AppState';
-import { RPCParseViewKeyStatusEnum } from '../../app/rpc/enums/RPCParseViewKeyStatusEnum';
+import { ButtonTypeEnum, GlobalConst } from '../../app/AppState';
 
 type ImportUfvkProps = {
   onClickCancel: () => void;
@@ -72,16 +70,36 @@ const ImportUfvk: React.FunctionComponent<ImportUfvkProps> = ({ onClickCancel, o
 
   useEffect(() => {
     if (seedufvkText) {
-      const seedufvkTextArray: string[] = seedufvkText.replaceAll('\n', ' ').trim().replaceAll('  ', ' ').split(' ');
-      console.log(seedufvkTextArray);
-      // if the seed have 25 -> means it is a copy/paste from the stored seed in the device.
-      if (seedufvkTextArray.length === 25) {
-        // if the last word is a number -> move it to the birthday field
-        const lastWord: string = seedufvkTextArray[seedufvkTextArray.length - 1];
-        const possibleBirthday: number | null = isNaN(Number(lastWord)) ? null : Number(lastWord);
-        if (possibleBirthday && !birthday) {
-          setBirthday(possibleBirthday.toString());
-          setSeedufvkText(seedufvkTextArray.slice(0, 24).join(' '));
+      if (
+        seedufvkText.toLowerCase().startsWith(GlobalConst.uview) ||
+        seedufvkText.toLowerCase().startsWith(GlobalConst.utestview)
+      ) {
+        // if it is a ufvk
+        const seedufvkTextArray: string[] = seedufvkText.replaceAll('\n', ' ').trim().replaceAll('  ', ' ').split(' ');
+        console.log(seedufvkTextArray);
+        // if the ufvk have 2 -> means it is a copy/paste from the stored ufvk in the device.
+        if (seedufvkTextArray.length === 2) {
+          // if the last word is a number -> move it to the birthday field
+          const lastWord: string = seedufvkTextArray[seedufvkTextArray.length - 1];
+          const possibleBirthday: number | null = isNaN(Number(lastWord)) ? null : Number(lastWord);
+          if (possibleBirthday && !birthday) {
+            setBirthday(possibleBirthday.toString());
+            setSeedufvkText(seedufvkTextArray.slice(0, 1).join(' '));
+          }
+        }
+      } else {
+        // if it is a seed
+        const seedufvkTextArray: string[] = seedufvkText.replaceAll('\n', ' ').trim().replaceAll('  ', ' ').split(' ');
+        console.log(seedufvkTextArray);
+        // if the seed have 25 -> means it is a copy/paste from the stored seed in the device.
+        if (seedufvkTextArray.length === 25) {
+          // if the last word is a number -> move it to the birthday field
+          const lastWord: string = seedufvkTextArray[seedufvkTextArray.length - 1];
+          const possibleBirthday: number | null = isNaN(Number(lastWord)) ? null : Number(lastWord);
+          if (possibleBirthday && !birthday) {
+            setBirthday(possibleBirthday.toString());
+            setSeedufvkText(seedufvkTextArray.slice(0, 24).join(' '));
+          }
         }
       }
     }
@@ -99,7 +117,7 @@ const ImportUfvk: React.FunctionComponent<ImportUfvkProps> = ({ onClickCancel, o
 
   // zingolib interfase have no way to initialize a `lightclient` with no action associated...
   // the validation of the ufvk will be when we try to `restore from ufvk'...
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  /*
   const validateKey = async (scannedKey: string): Promise<boolean> => {
     const result: string = await RPCModule.execute(CommandEnum.parseViewkey, scannedKey);
     //console.log(result);
@@ -132,6 +150,7 @@ const ImportUfvk: React.FunctionComponent<ImportUfvkProps> = ({ onClickCancel, o
       return false;
     }
   };
+  */
 
   return (
     <SafeAreaView

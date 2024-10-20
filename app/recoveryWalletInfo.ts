@@ -1,6 +1,5 @@
 import * as Keychain from 'react-native-keychain';
 import { GlobalConst, WalletType } from './AppState';
-import { isEqual } from 'lodash';
 
 const options = (biometrics: Keychain.BIOMETRY_TYPE | null): Keychain.Options => {
   return {

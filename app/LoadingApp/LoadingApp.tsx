@@ -521,7 +521,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                 // 3. UFVK - watch-only wallet
                 // 4. No keys - watch-only wallet (possibly an error)
 
-                let readOnly:boolean; 
+                let readOnly: boolean;
                 if (
                   walletKindJSON.kind === RPCWalletKindEnum.LoadedFromUnifiedFullViewingKey ||
                   walletKindJSON.kind === RPCWalletKindEnum.NoKeysFound
