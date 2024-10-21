@@ -56,25 +56,6 @@ export const getRecoveryWalletInfo = async (): Promise<WalletType> => {
   return {} as WalletType;
 };
 
-//export const getStorageRecoveryWalletInfo = async (): Promise<string> => {
-//  try {
-//    const credentials = await Keychain.getGenericPassword(options(await Keychain.getSupportedBiometryType()));
-//    if (credentials) {
-//      console.log('keys read correctly', credentials);
-//      if (credentials.username === GlobalConst.keyKeyChain && credentials.service === GlobalConst.serviceKeyChain) {
-//        return credentials.storage;
-//      } else {
-//        console.log('no match the key');
-//      }
-//    } else {
-//      console.log('Error no keys stored');
-//    }
-//  } catch (error) {
-//    console.log('Error getting keys:', error);
-//  }
-//  return '';
-//};
-
 export const hasRecoveryWalletInfo = async (): Promise<boolean> => {
   //const keys: WalletType = await getRecoveryWalletInfo();
   return await Keychain.hasGenericPassword(options(await Keychain.getSupportedBiometryType()));

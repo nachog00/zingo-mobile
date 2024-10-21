@@ -514,7 +514,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
               //console.log(walletKindStr);
               try {
                 const walletKindJSON: RPCWalletKindType = await JSON.parse(walletKindStr);
-                console.log(walletKindJSON);
+                //console.log(walletKindJSON);
                 // there are 4 kinds:
                 // 1. seed
                 // 2. USK

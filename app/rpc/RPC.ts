@@ -726,6 +726,8 @@ export default class RPC {
         //console.log('sync wallet birthday', this.walletBirthday);
         //console.log('sync', this.syncStatusTimerID);
         console.log(
+          'in progress',
+          ss.in_progress,
           'synced',
           ss.synced_blocks,
           'trialDecryptions',

@@ -172,7 +172,7 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
       if (!valueTransfersSorted || !valueTransfersSorted.length) {
         setFirstScrollToBottomDone(true);
       } else {
-        console.log('scroll bottom');
+        //console.log('scroll bottom');
         handleScrollToBottom();
       }
     }
@@ -217,10 +217,10 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
     const isBottom =
       Math.round(contentOffset.y) >= Math.round(contentSize.height - layoutMeasurement.height) && scrollable;
-    console.log(Math.round(contentOffset.y), Math.round(contentSize.height - layoutMeasurement.height), isBottom);
+    //console.log(Math.round(contentOffset.y), Math.round(contentSize.height - layoutMeasurement.height), isBottom);
     setIsAtBottom(isBottom);
     if (isBottom && !firstScrollToBottomDone) {
-      console.log('first scroll bottom done');
+      //console.log('first scroll bottom done');
       setFirstScrollToBottomDone(true);
     }
   };

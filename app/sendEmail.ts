@@ -39,7 +39,7 @@ export const sendEmail = async (
       console.log('Email client opened', url);
     })
     .catch((err: any) => {
-      console.error('Error opening email client:', err);
+      console.log('Error opening email client:', err);
       Alert.alert(translate('loadedapp.email-error') as string, JSON.stringify(err));
     });
 };

@@ -44,7 +44,7 @@ const Pools: React.FunctionComponent<PoolsProps> = ({ closeModal, setPrivacyOpti
       const walletKindStr: string = await RPCModule.execute(CommandEnum.walletKind, '');
       try {
         const walletKindJSON: RPCWalletKindType = await JSON.parse(walletKindStr);
-        console.log(walletKindJSON);
+        //console.log(walletKindJSON);
         setOrchardPool(walletKindJSON.orchard);
         setSaplingPool(walletKindJSON.sapling);
         setTransparentPool(walletKindJSON.transparent);
