@@ -49,6 +49,7 @@ const ImportUfvk: React.FunctionComponent<ImportUfvkProps> = ({ onClickCancel, o
     return () => {
       !!keyboardDidShowListener && keyboardDidShowListener.remove();
       !!keyboardDidHideListener && keyboardDidHideListener.remove();
+      slideAnim.value = 0;
     };
   }, [slideAnim, titleViewHeight]);
 

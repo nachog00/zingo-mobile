@@ -251,6 +251,7 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
     return () => {
       !!keyboardDidShowListener && keyboardDidShowListener.remove();
       !!keyboardDidHideListener && keyboardDidHideListener.remove();
+      slideAnim.value = 0;
     };
   }, [slideAnim, titleViewHeight]);
 

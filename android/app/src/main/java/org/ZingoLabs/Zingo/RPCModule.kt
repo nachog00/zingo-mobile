@@ -393,7 +393,6 @@ class RPCModule internal constructor(private val reactContext: ReactApplicationC
     @ReactMethod
     fun execute(cmd: String, args: String, promise: Promise) {
         thread {
-
             uniffi.zingo.initLogging()
 
             // Log.i("execute", "Executing $cmd with $args")
@@ -422,8 +421,6 @@ class RPCModule internal constructor(private val reactContext: ReactApplicationC
     @ReactMethod
     fun getLatestBlock(server: String, promise: Promise) {
         thread {
-            // Log.i("MAIN", "Initialize Light Client")
-            
             uniffi.zingo.initLogging()
             
             // Initialize Light Client
@@ -435,62 +432,62 @@ class RPCModule internal constructor(private val reactContext: ReactApplicationC
 
     @ReactMethod
     fun getDonationAddress(promise: Promise) {
-        // Log.i("MAIN", "Initialize Light Client")
+        thread {
+            uniffi.zingo.initLogging()
 
-        uniffi.zingo.initLogging()
+            // Initialize Light Client
+            val resp = uniffi.zingo.getDeveloperDonationAddress()
 
-        // Initialize Light Client
-        val resp = uniffi.zingo.getDeveloperDonationAddress()
-
-        promise.resolve(resp)
+            promise.resolve(resp)
+        }
     }
 
     @ReactMethod
     fun getZenniesDonationAddress(promise: Promise) {
-        // Log.i("MAIN", "Initialize Light Client")
+        thread {
+            uniffi.zingo.initLogging()
 
-        uniffi.zingo.initLogging()
+            // Initialize Light Client
+            val resp = uniffi.zingo.getZenniesForZingoDonationAddress()
 
-        // Initialize Light Client
-        val resp = uniffi.zingo.getZenniesForZingoDonationAddress()
-
-        promise.resolve(resp)
+            promise.resolve(resp)
+        }
     }
 
     @ReactMethod
     fun getValueTransfersList(promise: Promise) {
-        // Log.i("MAIN", "Initialize Light Client")
+        thread {
+            uniffi.zingo.initLogging()
 
-        uniffi.zingo.initLogging()
+            // Initialize Light Client
+            val resp = uniffi.zingo.getValueTransfers()
 
-        // Initialize Light Client
-        val resp = uniffi.zingo.getValueTransfers()
-
-        promise.resolve(resp)
+            promise.resolve(resp)
+        }
     }
 
     @ReactMethod
     fun getTransactionSummariesList(promise: Promise) {
-        // Log.i("MAIN", "Initialize Light Client")
+        thread {
+            uniffi.zingo.initLogging()
 
-        uniffi.zingo.initLogging()
+            // Initialize Light Client
+            val resp = uniffi.zingo.getTransactionSummaries()
 
-        // Initialize Light Client
-        val resp = uniffi.zingo.getTransactionSummaries()
-
-        promise.resolve(resp)
+            promise.resolve(resp)
+        }
     }
 
     @ReactMethod
     fun setCryptoDefaultProvider(promise: Promise) {
-        // Log.i("MAIN", "Initialize Light Client")
-        
-        uniffi.zingo.initLogging()
+        thread {
+            uniffi.zingo.initLogging()
 
-        // Initialize Light Client
-        val resp = uniffi.zingo.setCryptoDefaultProviderToRing()
+            // Initialize Light Client
+            val resp = uniffi.zingo.setCryptoDefaultProviderToRing()
 
-        promise.resolve(resp)
+            promise.resolve(resp)
+        }
     }
 
 }

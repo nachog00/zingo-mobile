@@ -139,6 +139,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
   moment.locale(language);
 
   const opacityValue = useRef(new Animated.Value(1)).current;
+  const animationRef = useRef<Animated.CompositeAnimation | null>(null);
   const [showShieldButton, setShowShieldButton] = useState<boolean>(false);
   const [blocksRemaining, setBlocksRemaining] = useState<number>(0);
   const [shieldingFee, setShieldingFee] = useState<number>(0);
@@ -333,18 +334,19 @@ const Header: React.FunctionComponent<HeaderProps> = ({
         }),
       ]),
     );
+
+    animationRef.current = animation;
+
     if (!noSyncingStatus) {
       if (syncingStatus.inProgress) {
-        animation.start();
+        animationRef.current?.start();
       } else {
-        animation.stop();
+        animationRef.current?.stop();
       }
     }
 
     return () => {
-      if (!noSyncingStatus) {
-        animation.stop();
-      }
+      animationRef.current?.stop();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncingStatus.inProgress, noSyncingStatus]);

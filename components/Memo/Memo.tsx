@@ -62,6 +62,7 @@ const Memo: React.FunctionComponent<MemoProps> = ({ closeModal, updateToField })
     return () => {
       !!keyboardDidShowListener && keyboardDidShowListener.remove();
       !!keyboardDidHideListener && keyboardDidHideListener.remove();
+      slideAnim.value = 0;
     };
   }, [slideAnim, titleViewHeight]);
 
