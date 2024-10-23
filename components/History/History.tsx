@@ -84,46 +84,10 @@ const History: React.FunctionComponent<HistoryProps> = ({
   var lastMonth = '';
 
   const fetchValueTransfersSorted = useMemo(() => {
-    // we need to sort the array properly.
-    // by:
-    // - time
-    // - txid
-    // - address
-    // - pool
     if (!valueTransfers) {
       return [] as ValueTransferType[];
     }
-    return valueTransfers
-      .sort((a: ValueTransferType, b: ValueTransferType) => {
-        const timeComparison = b.time - a.time;
-        if (timeComparison === 0) {
-          // same time
-          const txidComparison = a.txid.localeCompare(b.txid);
-          if (txidComparison === 0) {
-            // same txid
-            const aAddress = a.address?.toString() || '';
-            const bAddress = b.address?.toString() || '';
-            const addressComparison = aAddress.localeCompare(bAddress);
-            if (addressComparison === 0) {
-              // same address
-              const aPoolType = a.poolType?.toString() || '';
-              const bPoolType = b.poolType?.toString() || '';
-              // last one sort criteria - poolType.
-              return aPoolType.localeCompare(bPoolType);
-            } else {
-              // different address
-              return addressComparison;
-            }
-          } else {
-            // different txid
-            return txidComparison;
-          }
-        } else {
-          // different time
-          return timeComparison;
-        }
-      })
-      .slice(0, numVt);
+    return valueTransfers.slice(0, numVt);
   }, [valueTransfers, numVt]);
 
   useEffect(() => {

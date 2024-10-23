@@ -359,10 +359,13 @@ export default class RPC {
     // clean start.
     await this.stopSyncProcess();
 
+    // don't wait for this... it's faster.
+    this.updateData();
+
     // every 15 seconds the App try to Sync the new blocks.
     if (!this.refreshTimerID) {
       this.refreshTimerID = setInterval(() => {
-        //console.log('++++++++++ interval try refresh 15 secs');
+        console.log('++++++++++ interval try refresh 15 secs', this.timers);
         this.refresh(false);
       }, 15 * 1000); // 15 seconds
       //console.log('create refresh timer', this.refreshTimerID);
@@ -372,7 +375,7 @@ export default class RPC {
     // every 5 seconds the App update all data
     if (!this.updateTimerID) {
       this.updateTimerID = setInterval(() => {
-        //console.log('++++++++++ interval update 5 secs');
+        console.log('++++++++++ interval update 5 secs', this.timers);
         this.sanitizeTimers();
         this.updateData();
       }, 5 * 1000); // 5 secs
@@ -393,9 +396,6 @@ export default class RPC {
     for (var i = 0; i < deleted.length; i++) {
       this.timers.splice(deleted[i], 1);
     }
-
-    // don't wait for this... it's faster.
-    this.updateData();
 
     // Call the refresh after configure to update the UI. Do it in a timeout
     // to allow the UI to render first
@@ -590,21 +590,19 @@ export default class RPC {
 
   async loadWalletData() {
     await this.fetchTandZandOValueTransfers();
-    //console.log('RPC - 3.1 - fetch value transfers');
+    //console.log('RPC - 4.1 - fetch value transfers');
     await this.fetchAddresses();
-    //console.log('RPC - 3.2 - fetch addresses');
+    //console.log('RPC - 4.2 - fetch addresses');
     await this.fetchTotalBalance();
-    //console.log('RPC - 3.3 - fetch total balance');
-    await this.fetchInfoAndServerHeight();
-    //console.log('RPC - 3.4 - fetch info & server height');
+    //console.log('RPC - 4.3 - fetch total balance');
     await this.fetchWalletSettings();
-    //console.log('RPC - 3.5 - fetch wallet settings');
+    //console.log('RPC - 4.5 - fetch wallet settings');
   }
 
   async updateData() {
     //console.log('Update data triggered');
     if (this.updateDataLock) {
-      //console.log('RPC - Update Data lock, returning *****************************');
+      console.log('RPC - Update Data lock, returning *****************************');
       return;
     }
 
@@ -617,10 +615,12 @@ export default class RPC {
       //console.log('RPC - 1 - fetch wallet height');
       await this.fetchWalletBirthday();
       //console.log('RPC - 2 - fetch wallet birthday');
+      await this.fetchInfoAndServerHeight();
+      //console.log('RPC - 3 - fetch info & server height');
 
       // And fetch the rest of the data.
       await this.loadWalletData();
-      //console.log('RPC - 3 - fetch wallet Data');
+      //console.log('RPC - 4 - fetch wallet Data');
 
       //console.log(`Finished update data at ${lastServerBlockHeight}`);
       this.updateDataLock = false;
@@ -635,12 +635,12 @@ export default class RPC {
   async refresh(fullRefresh: boolean, fullRescan?: boolean) {
     // If we're in refresh, we don't overlap
     if (this.inRefresh) {
-      //console.log('REFRESH ----> in refresh is true');
+      console.log('REFRESH ----> in refresh is true');
       return;
     }
 
     if (this.syncStatusTimerID) {
-      //console.log('REFRESH ----> syncStatusTimerID exists already');
+      console.log('REFRESH ----> syncStatusTimerID exists already');
       return;
     }
 
@@ -649,7 +649,7 @@ export default class RPC {
     await this.fetchInfoAndServerHeight();
 
     if (!this.lastServerBlockHeight) {
-      //console.log('REFRESH ----> the last server block is zero');
+      console.log('REFRESH ----> the last server block is zero');
       return;
     }
 
@@ -940,7 +940,7 @@ export default class RPC {
       this.timers.push(this.syncStatusTimerID);
     } else {
       // Already at the latest block
-      //console.log('REFRESH ----> Already have latest block, waiting for next refresh');
+      console.log('REFRESH ----> Already have latest block, waiting for next refresh');
       // Here I know the sync process is over, I need to inform to the UI.
       this.fnSetSyncingStatus({
         syncID: this.syncId < 0 ? 0 : this.syncId,
@@ -1243,10 +1243,6 @@ export default class RPC {
 
       //console.log(valueTransfersJSON);
 
-      await this.fetchWalletHeight();
-      await this.fetchWalletBirthday();
-      await this.fetchInfoAndServerHeight();
-
       let vtList: ValueTransferType[] = [];
 
       // oscar idea and I think it is the correct way to build the history of
@@ -1292,7 +1288,8 @@ export default class RPC {
         currentValueTransferList.poolType = !vt.pool_received ? undefined : vt.pool_received;
 
         if (vt.txid.startsWith('xxxxxxxxx')) {
-          console.log('valuetranfer: ', vt);
+          console.log('valuetransfer zingolib: ', vt);
+          console.log('valuetransfer zingo', currentValueTransferList);
           console.log('--------------------------------------------------');
         }
         if (vt.status === RPCValueTransfersStatusEnum.transmitted) {
@@ -1303,9 +1300,46 @@ export default class RPC {
         vtList.push(currentValueTransferList);
       });
 
-      //console.log(txlist);
+      //console.log(vtlist);
 
-      this.fnSetValueTransfersList(vtList);
+      // to sort the data here can be better
+      // we need to sort the array properly.
+      // by:
+      // - time
+      // - txid
+      // - address
+      // - pool
+      const vtListSorted = vtList.sort((a: ValueTransferType, b: ValueTransferType) => {
+        const timeComparison = b.time - a.time;
+        if (timeComparison === 0) {
+          // same time
+          const txidComparison = a.txid.localeCompare(b.txid);
+          if (txidComparison === 0) {
+            // same txid
+            const aAddress = a.address?.toString() || '';
+            const bAddress = b.address?.toString() || '';
+            const addressComparison = aAddress.localeCompare(bAddress);
+            if (addressComparison === 0) {
+              // same address
+              const aPoolType = a.poolType?.toString() || '';
+              const bPoolType = b.poolType?.toString() || '';
+              // last one sort criteria - poolType.
+              return aPoolType.localeCompare(bPoolType);
+            } else {
+              // different address
+              return addressComparison;
+            }
+          } else {
+            // different txid
+            return txidComparison;
+          }
+        } else {
+          // different time
+          return timeComparison;
+        }
+      });
+
+      this.fnSetValueTransfersList(vtListSorted);
     } catch (error) {
       console.log(`Critical Error txs list value transfers ${error}`);
       // relaunch the interval tasks just in case they are aborted.
