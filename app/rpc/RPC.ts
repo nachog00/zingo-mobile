@@ -1269,6 +1269,7 @@ export default class RPC {
         currentValueTransferList.fee = (!vt.transaction_fee ? 0 : vt.transaction_fee) / 10 ** 8;
         currentValueTransferList.zecPrice = !vt.zec_price ? 0 : vt.zec_price;
         if (
+          vt.status === RPCValueTransfersStatusEnum.calculated ||
           vt.status === RPCValueTransfersStatusEnum.transmitted ||
           vt.status === RPCValueTransfersStatusEnum.mempool
         ) {
@@ -1291,6 +1292,9 @@ export default class RPC {
           console.log('valuetransfer zingolib: ', vt);
           console.log('valuetransfer zingo', currentValueTransferList);
           console.log('--------------------------------------------------');
+        }
+        if (vt.status === RPCValueTransfersStatusEnum.calculated) {
+          console.log('CALCULATED ))))))))))))))))))))))))))))))))))');
         }
         if (vt.status === RPCValueTransfersStatusEnum.transmitted) {
           console.log('TRANSMITTED ))))))))))))))))))))))))))))))))))');

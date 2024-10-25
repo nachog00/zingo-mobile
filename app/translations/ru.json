@@ -558,6 +558,7 @@
     "address-https": "Zingo-аутентифицированный адрес",
     "type": "Тип",
     "not-confirmed": "Транзакция еще не подтверждена",
+    "calculated": "Рассчитано",
     "transmitted": "Передано",
     "mempool": "B Mempool"
   },

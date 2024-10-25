@@ -558,6 +558,7 @@
     "address-https": "Zingo-Authenticated Address",
     "type": "Type",
     "not-confirmed": "Transaction not yet confirmed",
+    "calculated": "Calculated",
     "transmitted": "Transmitted",
     "mempool": "In Mempool"
   },

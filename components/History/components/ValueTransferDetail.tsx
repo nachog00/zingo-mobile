@@ -256,7 +256,8 @@ const ValueTransferDetail: React.FunctionComponent<ValueTransferDetailProps> = (
 
         {vt.confirmations === 0 && (
           <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-            {vt.status === RPCValueTransfersStatusEnum.transmitted && (
+            {(vt.status === RPCValueTransfersStatusEnum.transmitted ||
+              vt.status === RPCValueTransfersStatusEnum.calculated) && (
               <FontAwesomeIcon
                 style={{ marginRight: 5 }}
                 icon={faTriangleExclamation}
@@ -266,12 +267,24 @@ const ValueTransferDetail: React.FunctionComponent<ValueTransferDetailProps> = (
             )}
             <FadeText
               style={{
-                color: vt.status === RPCValueTransfersStatusEnum.transmitted ? colors.primary : colors.primaryDisabled,
+                color:
+                  vt.status === RPCValueTransfersStatusEnum.transmitted ||
+                  vt.status === RPCValueTransfersStatusEnum.calculated
+                    ? colors.primary
+                    : colors.primaryDisabled,
                 fontSize: 12,
                 opacity: 1,
                 fontWeight: '700',
-                textAlign: vt.status === RPCValueTransfersStatusEnum.transmitted ? 'center' : 'left',
-                textDecorationLine: vt.status === RPCValueTransfersStatusEnum.transmitted ? 'underline' : 'none',
+                textAlign:
+                  vt.status === RPCValueTransfersStatusEnum.transmitted ||
+                  vt.status === RPCValueTransfersStatusEnum.calculated
+                    ? 'center'
+                    : 'left',
+                textDecorationLine:
+                  vt.status === RPCValueTransfersStatusEnum.transmitted ||
+                  vt.status === RPCValueTransfersStatusEnum.calculated
+                    ? 'underline'
+                    : 'none',
               }}>
               {(translate(`history.${vt.status}`) as string) + ' - ' + (translate('history.not-confirmed') as string)}
             </FadeText>

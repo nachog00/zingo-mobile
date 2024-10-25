@@ -558,6 +558,7 @@
     "address-https": "Dirección autenticada por Zingo",
     "type": "Tipo",
     "not-confirmed": "Transacción no confirmada todavía",
+    "calculated": "Calculada",
     "transmitted": "Transmitida",
     "mempool": "En Mempool"
   },
