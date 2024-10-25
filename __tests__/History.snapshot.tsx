@@ -74,7 +74,6 @@ jest.mock('react-native-gesture-handler', () => {
     Directions: {},
   };
   return {
-    TouchableOpacity: View,
     Swipeable: View,
     RNGestureHandlerModule: RN,
   };
