@@ -34,6 +34,7 @@ type MessageLineProps = {
   setValueTransferDetail: (t: ValueTransferType) => void;
   setValueTransferDetailIndex: (i: number) => void;
   setValueTransferDetailModalShowing: (b: boolean) => void;
+  fromMessageAddress: boolean;
 };
 const MessageLine: React.FunctionComponent<MessageLineProps> = ({
   index,
@@ -42,6 +43,7 @@ const MessageLine: React.FunctionComponent<MessageLineProps> = ({
   setValueTransferDetail,
   setValueTransferDetailIndex,
   setValueTransferDetailModalShowing,
+  fromMessageAddress,
 }) => {
   const context = useContext(ContextAppLoaded);
   const { translate, language, privacy, info, addressBook, addresses, addLastSnackbar } = context;
@@ -86,9 +88,7 @@ const MessageLine: React.FunctionComponent<MessageLineProps> = ({
   //console.log('render ValueTransferLine - 5', index, nextLineWithSameTxid);
 
   return (
-    <View
-      testID={`valueTransferList.${index + 1}`}
-      style={{ display: 'flex', flexDirection: 'column', marginHorizontal: 10 }}>
+    <View testID={`m-${index + 1}`} style={{ display: 'flex', flexDirection: 'column', marginHorizontal: 10 }}>
       {month !== '' && (
         <View
           style={{
@@ -104,6 +104,7 @@ const MessageLine: React.FunctionComponent<MessageLineProps> = ({
         </View>
       )}
       <TouchableOpacity
+        style={{ zIndex: 999 }}
         onPress={() => {
           setValueTransferDetail(vt);
           setValueTransferDetailIndex(index);
@@ -124,7 +125,7 @@ const MessageLine: React.FunctionComponent<MessageLineProps> = ({
             backgroundColor:
               vt.kind === ValueTransferKindEnum.Received ? colors.primaryDisabled : colors.secondaryDisabled,
           }}>
-          {!!vt.address && (
+          {!!vt.address && !fromMessageAddress && (
             <View style={{ marginTop: -15, marginBottom: 10, marginLeft: 30 }}>
               <AddressItem address={vt.address} oneLine={true} closeModal={() => {}} openModal={() => {}} />
             </View>
@@ -133,6 +134,7 @@ const MessageLine: React.FunctionComponent<MessageLineProps> = ({
             <View style={{ marginTop: 0 }}>
               {!!memo && (
                 <TouchableOpacity
+                  style={{ zIndex: 999 }}
                   onPress={() => {
                     Clipboard.setString(memo);
                     addLastSnackbar({
@@ -145,6 +147,7 @@ const MessageLine: React.FunctionComponent<MessageLineProps> = ({
               )}
               {!!memoUA && (
                 <TouchableOpacity
+                  style={{ zIndex: 999 }}
                   onPress={() => {
                     Clipboard.setString(memoUA);
                     if (!thisWalletAddress(memoUA)) {

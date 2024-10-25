@@ -74,7 +74,8 @@ const ValueTransferLine: React.FunctionComponent<ValueTransferLineProps> = ({
     width: Dimensions.get('screen').width,
     height: Dimensions.get('screen').height,
   };
-  const maxWidthHit = useRef(false);
+  const maxWidthHit = useRef<boolean>(false);
+  const swipeableRef = useRef<Swipeable | null>(null);
 
   useEffect(() => {
     const amountCo =
@@ -265,12 +266,15 @@ const ValueTransferLine: React.FunctionComponent<ValueTransferLineProps> = ({
         </View>
       )}
       <TouchableOpacity
+        style={{ zIndex: 999 }}
         onPress={() => {
           setValueTransferDetail(vt);
           setValueTransferDetailIndex(index);
           setValueTransferDetailModalShowing(true);
+          swipeableRef?.current?.reset();
         }}>
         <Swipeable
+          ref={swipeableRef}
           overshootLeft={false}
           overshootRight={messagesAddress ? true : false}
           overshootFriction={1}
