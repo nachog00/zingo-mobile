@@ -4,7 +4,6 @@ import { View, TouchableOpacity, Alert } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faAddressCard, faQrcode, faTrashCan, faPencil, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-//import { TouchableOpacity } from 'react-native-gesture-handler';
 
 import FadeText from '../../Components/FadeText';
 import {

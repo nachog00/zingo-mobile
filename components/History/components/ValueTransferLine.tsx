@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, Platform, View } from 'react-native';
+import { Animated, Dimensions, Platform, View, TouchableOpacity } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import {
@@ -14,7 +14,6 @@ import {
   faFileLines,
   faPaperPlane,
 } from '@fortawesome/free-solid-svg-icons';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
 import ZecAmount from '../../Components/ZecAmount';

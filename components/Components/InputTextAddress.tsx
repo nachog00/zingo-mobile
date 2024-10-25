@@ -4,7 +4,6 @@ import { View, TouchableOpacity, TextInput, Modal } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCheck, faQrcode, faXmark } from '@fortawesome/free-solid-svg-icons';
-//import { TouchableOpacity } from 'react-native-gesture-handler';
 
 import { ContextAppLoaded } from '../../app/context';
 import ScannerAddress from '../Send/components/ScannerAddress';

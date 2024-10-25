@@ -216,8 +216,6 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
         justifyContent: 'flex-start',
         width: '100%',
         height: address ? '90%' : '100%',
-        borderColor: 'red',
-        borderWidth: 1,
       }}>
       <Modal
         animationType="slide"
@@ -252,8 +250,6 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
               alignItems: 'center',
               marginHorizontal: 10,
               marginVertical: 20,
-              borderColor: 'red',
-              borderWidth: 1,
             }}>
             <AddressItem
               address={address}
