@@ -280,6 +280,9 @@ dependencies {
 
     // uniffi needs this
     implementation "net.java.dev.jna:jna:5.9.0@aar"
+
+    // back navigation implementation
+    implementation "androidx.activity:activity:1.6.0-alpha05"
 }
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
