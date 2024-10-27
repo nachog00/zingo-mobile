@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -49,8 +49,6 @@ const MessageLine: React.FunctionComponent<MessageLineProps> = ({
   const { colors } = useTheme() as unknown as ThemeType;
   moment.locale(language);
 
-  const [amountColor, setAmountColor] = useState<string>(colors.primaryDisabled);
-
   const memoTotal = vt.memos && vt.memos.length > 0 ? vt.memos.join('\n') : '';
   let memo = '';
   let memoUA = '';
@@ -63,16 +61,13 @@ const MessageLine: React.FunctionComponent<MessageLineProps> = ({
     memo = memoTotal;
   }
 
-  useEffect(() => {
-    const amountCo =
-      vt.confirmations === 0
-        ? colors.primaryDisabled
-        : vt.kind === ValueTransferKindEnum.Received || vt.kind === ValueTransferKindEnum.Shield
-        ? colors.primary
-        : colors.text;
-
-    setAmountColor(amountCo);
-  }, [colors.primary, colors.primaryDisabled, colors.text, vt.confirmations, vt.kind]);
+  const getAmountColor = (_vt: ValueTransferType) => {
+    return vt.confirmations === 0
+      ? colors.primaryDisabled
+      : _vt.kind === ValueTransferKindEnum.Received || _vt.kind === ValueTransferKindEnum.Shield
+      ? colors.primary
+      : colors.text;
+  };
 
   const contactFound: (add: string) => boolean = (add: string) => {
     const contact: AddressBookFileClass[] = addressBook.filter((ab: AddressBookFileClass) => ab.address === add);
@@ -196,7 +191,7 @@ const MessageLine: React.FunctionComponent<MessageLineProps> = ({
               }}
               size={12}
               currencyName={info.currencyName}
-              color={amountColor}
+              color={getAmountColor(vt)}
               amtZec={vt.amount}
               privacy={privacy}
             />

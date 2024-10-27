@@ -4,7 +4,6 @@ import { Animated, Dimensions, Platform, View, TouchableOpacity } from 'react-na
 import { useTheme } from '@react-navigation/native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import {
-  IconDefinition,
   faArrowDown,
   faArrowUp,
   faRefresh,
@@ -64,9 +63,6 @@ const ValueTransferLine: React.FunctionComponent<ValueTransferLineProps> = ({
   const { colors } = useTheme() as unknown as ThemeType;
   moment.locale(language);
 
-  const [amountColor, setAmountColor] = useState<string>(colors.primaryDisabled);
-  const [vtIcon, setVtIcon] = useState<IconDefinition>(faRefresh);
-  const [haveMemo, setHaveMemo] = useState<boolean>(false);
   const [messagesAddress, setMessagesAddress] = useState<boolean>(false);
 
   const dimensions = {
@@ -76,32 +72,27 @@ const ValueTransferLine: React.FunctionComponent<ValueTransferLineProps> = ({
   const maxWidthHit = useRef<boolean>(false);
   const swipeableRef = useRef<Swipeable | null>(null);
 
-  useEffect(() => {
-    const amountCo =
-      vt.confirmations === 0
-        ? colors.primaryDisabled
-        : vt.kind === ValueTransferKindEnum.Received || vt.kind === ValueTransferKindEnum.Shield
-        ? colors.primary
-        : colors.text;
+  const getAmountColor = (_vt: ValueTransferType) => {
+    return _vt.confirmations === 0
+      ? colors.primaryDisabled
+      : _vt.kind === ValueTransferKindEnum.Received || _vt.kind === ValueTransferKindEnum.Shield
+      ? colors.primary
+      : colors.text;
+  };
 
-    setAmountColor(amountCo);
-  }, [colors.primary, colors.primaryDisabled, colors.text, vt.confirmations, vt.kind]);
+  const getIcon = (_vt: ValueTransferType) => {
+    return _vt.confirmations === 0
+      ? faRefresh
+      : _vt.kind === ValueTransferKindEnum.Received || _vt.kind === ValueTransferKindEnum.Shield
+      ? faArrowDown
+      : faArrowUp;
+  };
 
-  useEffect(() => {
-    const txIc =
-      vt.confirmations === 0
-        ? faRefresh
-        : vt.kind === ValueTransferKindEnum.Received || vt.kind === ValueTransferKindEnum.Shield
-        ? faArrowDown
-        : faArrowUp;
-    setVtIcon(txIc);
-  }, [vt.confirmations, vt.kind]);
-
-  useEffect(() => {
+  const getHaveMemo = (_vt: ValueTransferType) => {
     // if have any memo
-    const memos: string[] = vt.memos ? vt.memos.filter(m => !!m) : [];
-    setHaveMemo(memos.length > 0);
-  }, [vt.memos]);
+    const memos: string[] = _vt.memos ? _vt.memos.filter(m => !!m) : [];
+    return memos.length > 0;
+  };
 
   useEffect(() => {
     setMessagesAddress(Utils.isMessagesAddress(vt));
@@ -303,12 +294,12 @@ const ValueTransferLine: React.FunctionComponent<ValueTransferLineProps> = ({
                 <FontAwesomeIcon
                   style={{ marginLeft: 5, marginRight: 5, marginTop: 0 }}
                   size={30}
-                  icon={vtIcon}
+                  icon={getIcon(vt)}
                   color={
                     vt.status === RPCValueTransfersStatusEnum.transmitted ||
                     vt.status === RPCValueTransfersStatusEnum.calculated
                       ? colors.syncing
-                      : amountColor
+                      : getAmountColor(vt)
                   }
                 />
               </View>
@@ -329,7 +320,7 @@ const ValueTransferLine: React.FunctionComponent<ValueTransferLineProps> = ({
                     style={{
                       opacity: 1,
                       fontWeight: 'bold',
-                      color: amountColor,
+                      color: getAmountColor(vt),
                       fontSize: vt.confirmations === 0 ? 14 : 18,
                     }}>
                     {vt.kind === ValueTransferKindEnum.Sent && vt.confirmations === 0
@@ -360,7 +351,7 @@ const ValueTransferLine: React.FunctionComponent<ValueTransferLineProps> = ({
                   </FadeText>
                   <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <FadeText>{vt.time ? moment((vt.time || 0) * 1000).format('MMM D, h:mm a') : '--'}</FadeText>
-                    {haveMemo && (
+                    {getHaveMemo(vt) && (
                       <FontAwesomeIcon
                         style={{ marginLeft: 10 }}
                         size={15}
@@ -375,7 +366,7 @@ const ValueTransferLine: React.FunctionComponent<ValueTransferLineProps> = ({
                 style={{ flexGrow: 1, alignSelf: 'auto', justifyContent: 'flex-end', paddingRight: 5 }}
                 size={18}
                 currencyName={info.currencyName}
-                color={amountColor}
+                color={getAmountColor(vt)}
                 amtZec={vt.amount}
                 privacy={privacy}
               />
