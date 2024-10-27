@@ -197,7 +197,7 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
   };
 
   //f (address) {
-  //  console.log(
+  //console.log(
   //    'render History - 4',
   //    valueTransfersSorted.length,
   //    'loading',

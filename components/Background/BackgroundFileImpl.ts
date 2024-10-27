@@ -35,7 +35,7 @@ export default class BackgroundFileImpl {
       return r;
     } catch (err) {
       // File probably doesn't exist, so return nothing
-      console.log('background json Error', err);
+      //console.log('background json Error', err);
       return { batches: 0, message: '', date: 0, dateEnd: 0 } as BackgroundType;
     }
   }
