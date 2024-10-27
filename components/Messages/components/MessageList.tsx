@@ -112,14 +112,16 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
   }, [valueTransfers, addressFilter]);
 
   useEffect(() => {
-    const vtf = fetchValueTransfersFiltered;
-    setLoadMoreButton(numVt < vtf.length);
-    setValueTransfersFiltered(vtf);
-    setValueTransfersSliced(vtf.slice(-numVt));
-    if (loading) {
-      setTimeout(() => {
-        setLoading(false);
-      }, 500);
+    if (valueTransfers !== null) {
+      const vtf = fetchValueTransfersFiltered;
+      setLoadMoreButton(numVt < vtf.length);
+      setValueTransfersFiltered(vtf);
+      setValueTransfersSliced(vtf.slice(-numVt));
+      if (loading) {
+        setTimeout(() => {
+          setLoading(false);
+        }, 500);
+      }
     }
     // if change numVt don't need to apply the filter
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -225,7 +227,7 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
         <ValueTransferDetail
           index={valueTransferDetailIndex}
           length={valueTransfersSliced.length}
-          totalLength={valueTransfers ? valueTransfersFiltered.length : 0}
+          totalLength={valueTransfersFiltered ? valueTransfersFiltered.length : 0}
           vt={valueTransferDetail}
           closeModal={() => setValueTransferDetailModalShowing(false)}
           openModal={() => setValueTransferDetailModalShowing(true)}

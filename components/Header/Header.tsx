@@ -730,7 +730,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
           {readOnly && (
             <>
               {setUfvkViewModalVisible &&
-              !(mode === ModeEnum.basic && valueTransfers && valueTransfers.length <= 0) &&
+              !(mode === ModeEnum.basic && valueTransfers !== null && valueTransfers.length <= 0) &&
               !(mode === ModeEnum.basic && totalBalance && totalBalance.total <= 0) ? (
                 <TouchableOpacity onPress={() => ufvkShowModal()}>
                   <FontAwesomeIcon icon={faSnowflake} size={24} color={colors.zingo} />
