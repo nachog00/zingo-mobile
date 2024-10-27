@@ -65,7 +65,7 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
   openModal,
 }) => {
   const context = useContext(ContextAppLoaded);
-  const { translate, valueTransfers, language, setBackgroundError, addLastSnackbar } = context;
+  const { translate, messages, language, setBackgroundError, addLastSnackbar } = context;
   const { colors } = useTheme() as unknown as ThemeType;
   moment.locale(language);
 
@@ -74,8 +74,8 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
   const [valueTransferDetailIndex, setValueTransferDetailIndex] = useState<number>(-1);
   const [numVt, setNumVt] = useState<number>(50);
   const [loadMoreButton, setLoadMoreButton] = useState<boolean>(false);
-  const [valueTransfersSliced, setValueTransfersSliced] = useState<ValueTransferType[]>([]);
-  const [valueTransfersFiltered, setValueTransfersFiltered] = useState<ValueTransferType[]>([]);
+  const [messagesSliced, setMessagesSliced] = useState<ValueTransferType[]>([]);
+  const [messagesFiltered, setMessagesFiltered] = useState<ValueTransferType[]>([]);
   const [isAtBottom, setIsAtBottom] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
   const [firstScrollToBottomDone, setFirstScrollToBottomDone] = useState<boolean>(false);
@@ -102,21 +102,21 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
     [address],
   );
 
-  const fetchValueTransfersFiltered = useMemo(() => {
-    if (!valueTransfers) {
+  const fetchMessagesFiltered = useMemo(() => {
+    if (!messages) {
       return [] as ValueTransferType[];
     }
-    return valueTransfers.filter(
+    return messages.filter(
       (a: ValueTransferType) => a.memos && a.memos.length > 0 && addressFilter(a.address, a.memos),
     );
-  }, [valueTransfers, addressFilter]);
+  }, [messages, addressFilter]);
 
   useEffect(() => {
-    if (valueTransfers !== null) {
-      const vtf = fetchValueTransfersFiltered;
+    if (messages !== null) {
+      const vtf = fetchMessagesFiltered;
       setLoadMoreButton(numVt < vtf.length);
-      setValueTransfersFiltered(vtf);
-      setValueTransfersSliced(vtf.slice(-numVt));
+      setMessagesFiltered(vtf);
+      setMessagesSliced(vtf.slice(-numVt));
       if (loading) {
         setTimeout(() => {
           setLoading(false);
@@ -125,11 +125,11 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
     }
     // if change numVt don't need to apply the filter
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [addressFilter, loading, valueTransfers, fetchValueTransfersFiltered]);
+  }, [addressFilter, loading, messages, fetchMessagesFiltered]);
 
   useEffect(() => {
-    setValueTransfersSliced(valueTransfersFiltered.slice(-numVt));
-  }, [numVt, valueTransfersFiltered]);
+    setMessagesSliced(messagesFiltered.slice(-numVt));
+  }, [numVt, messagesFiltered]);
 
   useEffect(() => {
     if (scrollToBottom) {
@@ -140,7 +140,7 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
 
   useEffect(() => {
     if (!loading) {
-      if (!valueTransfersSliced || !valueTransfersSliced.length) {
+      if (!messagesSliced || !messagesSliced.length) {
         setFirstScrollToBottomDone(true);
       } else {
         //console.log('scroll bottom');
@@ -172,8 +172,8 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
   const moveValueTransferDetail = (index: number, type: number) => {
     // -1 -> Previous ValueTransfer
     //  1 -> Next ValueTransfer
-    if ((index > 0 && type === -1) || (index < valueTransfersSliced.length - 1 && type === 1)) {
-      setValueTransferDetail(valueTransfersSliced[index + type]);
+    if ((index > 0 && type === -1) || (index < messagesSliced.length - 1 && type === 1)) {
+      setValueTransferDetail(messagesSliced[index + type]);
       setValueTransferDetailIndex(index + type);
     }
   };
@@ -199,7 +199,7 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
   //f (address) {
   //console.log(
   //    'render History - 4',
-  //    valueTransfersSorted.length,
+  //    messagesSliced.length,
   //    'loading',
   //    loading,
   //    'first scroll done',
@@ -226,8 +226,8 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
         onRequestClose={() => setValueTransferDetailModalShowing(false)}>
         <ValueTransferDetail
           index={valueTransferDetailIndex}
-          length={valueTransfersSliced.length}
-          totalLength={valueTransfersFiltered ? valueTransfersFiltered.length : 0}
+          length={messagesSliced.length}
+          totalLength={messagesFiltered ? messagesFiltered.length : 0}
           vt={valueTransferDetail}
           closeModal={() => setValueTransferDetailModalShowing(false)}
           openModal={() => setValueTransferDetailModalShowing(true)}
@@ -329,7 +329,7 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
           </View>
         ) : (
           <>
-            {!!valueTransfersSliced && !!valueTransfersSliced.length && (
+            {!!messagesSliced && !!messagesSliced.length && (
               <View
                 style={{
                   display: 'flex',
@@ -344,7 +344,7 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
           </>
         )}
 
-        {valueTransfersSliced.flatMap((vt, index) => {
+        {messagesSliced.flatMap((vt, index) => {
           let txmonth = vt.time ? moment(vt.time * 1000).format('MMM YYYY') : '--- ----';
 
           var month = '';

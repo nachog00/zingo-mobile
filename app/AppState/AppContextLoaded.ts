@@ -40,6 +40,9 @@ export default interface AppContextLoaded {
   // List of all T and Z and O value transfers
   valueTransfers: ValueTransferType[] | null;
 
+  // List of messages
+  messages: ValueTransferType[] | null;
+
   // The state of the send page
   sendPageState: SendPageStateClass;
 

@@ -32,6 +32,7 @@ export const defaultAppContextLoaded: AppContextLoaded = {
   totalBalance: null,
   addresses: null,
   valueTransfers: null,
+  messages: null,
   sendPageState: new SendPageStateClass(new ToAddrClass(0)),
   receivePageState: new ReceivePageStateClass(''),
   info: {} as InfoType,

@@ -43,6 +43,7 @@ export default class RPC {
   fnSetInfo: (info: InfoType) => void;
   fnSetTotalBalance: (totalBalance: TotalBalanceClass) => void;
   fnSetValueTransfersList: (vtList: ValueTransferType[]) => void;
+  fnSetMessagesList: (mList: ValueTransferType[]) => void;
   fnSetAllAddresses: (allAddresses: AddressClass[]) => void;
   fnSetSyncingStatus: (syncingStatus: SyncingStatusClass) => void;
   fnSetWalletSettings: (settings: WalletSettingsClass) => void;
@@ -78,7 +79,8 @@ export default class RPC {
 
   constructor(
     fnSetTotalBalance: (totalBalance: TotalBalanceClass) => void,
-    fnSetValueTransfersList: (txlist: ValueTransferType[]) => void,
+    fnSetValueTransfersList: (vtlist: ValueTransferType[]) => void,
+    fnSetMessagesList: (mlist: ValueTransferType[]) => void,
     fnSetAllAddresses: (addresses: AddressClass[]) => void,
     fnSetWalletSettings: (settings: WalletSettingsClass) => void,
     fnSetInfo: (info: InfoType) => void,
@@ -89,6 +91,7 @@ export default class RPC {
   ) {
     this.fnSetTotalBalance = fnSetTotalBalance;
     this.fnSetValueTransfersList = fnSetValueTransfersList;
+    this.fnSetMessagesList = fnSetMessagesList;
     this.fnSetAllAddresses = fnSetAllAddresses;
     this.fnSetWalletSettings = fnSetWalletSettings;
     this.fnSetInfo = fnSetInfo;
@@ -589,7 +592,7 @@ export default class RPC {
   }
 
   async loadWalletData() {
-    await this.fetchTandZandOValueTransfers();
+    await this.fetchTandZandOValueTransfersAndMessages();
     //console.log('RPC - 4.1 - fetch value transfers');
     await this.fetchAddresses();
     //console.log('RPC - 4.2 - fetch addresses');
@@ -676,6 +679,7 @@ export default class RPC {
       if (fullRescan) {
         // clean the ValueTransfer list before.
         this.fnSetValueTransfersList([]);
+        this.fnSetMessagesList([]);
         this.fnSetTotalBalance({
           orchardBal: 0,
           privateBal: 0,
@@ -1226,7 +1230,7 @@ export default class RPC {
   }
 
   // Fetch all T and Z and O ValueTransfers
-  async fetchTandZandOValueTransfers() {
+  async fetchTandZandOValueTransfersAndMessages() {
     try {
       const valueTransfersStr: string = await RPCModule.getValueTransfersList();
       //console.log(valueTransfersStr);
@@ -1313,7 +1317,7 @@ export default class RPC {
       // - txid
       // - address
       // - pool
-      const vtListSorted = vtList.sort((a: ValueTransferType, b: ValueTransferType) => {
+      const vtListSorted = [...vtList].sort((a: ValueTransferType, b: ValueTransferType) => {
         const timeComparison = b.time - a.time;
         if (timeComparison === 0) {
           // same time
@@ -1344,6 +1348,45 @@ export default class RPC {
       });
 
       this.fnSetValueTransfersList(vtListSorted);
+
+      // to sort the data here can be better
+      // we need to sort the array properly.
+      // by:
+      // - time (reverse)
+      // - txid
+      // - address
+      // - pool
+      const mListSorted = [...vtList].sort((a: ValueTransferType, b: ValueTransferType) => {
+        const timeComparison = a.time - b.time; // reverse
+        if (timeComparison === 0) {
+          // same time
+          const txidComparison = a.txid.localeCompare(b.txid);
+          if (txidComparison === 0) {
+            // same txid
+            const aAddress = a.address?.toString() || '';
+            const bAddress = b.address?.toString() || '';
+            const addressComparison = aAddress.localeCompare(bAddress);
+            if (addressComparison === 0) {
+              // same address
+              const aPoolType = a.poolType?.toString() || '';
+              const bPoolType = b.poolType?.toString() || '';
+              // last one sort criteria - poolType.
+              return aPoolType.localeCompare(bPoolType);
+            } else {
+              // different address
+              return addressComparison;
+            }
+          } else {
+            // different txid
+            return txidComparison;
+          }
+        } else {
+          // different time
+          return timeComparison;
+        }
+      });
+
+      this.fnSetMessagesList(mListSorted);
     } catch (error) {
       console.log(`Critical Error txs list value transfers ${error}`);
       // relaunch the interval tasks just in case they are aborted.

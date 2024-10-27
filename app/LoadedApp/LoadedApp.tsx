@@ -382,6 +382,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       totalBalance: null,
       addresses: null,
       valueTransfers: null,
+      messages: null,
       walletSettings: {} as WalletSettingsClass,
       syncingStatus: {} as SyncingStatusClass,
       sendProgress: {} as SendProgressClass,
@@ -451,6 +452,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
     this.rpc = new RPC(
       this.setTotalBalance,
       this.setValueTransfersList,
+      this.setMessagesList,
       this.setAllAddresses,
       this.setWalletSettings,
       this.setInfo,
@@ -901,6 +903,13 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
         },
         pending === 0 ? 250 : 0,
       );
+    }
+  };
+
+  setMessagesList = (messages: ValueTransferType[]) => {
+    if (!isEqual(this.state.messages, messages)) {
+      //console.log('fetch messages');
+      this.setState({ messages });
     }
   };
 
@@ -1595,6 +1604,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       totalBalance: this.state.totalBalance,
       addresses: this.state.addresses,
       valueTransfers: this.state.valueTransfers,
+      messages: this.state.messages,
       walletSettings: this.state.walletSettings,
       syncingStatus: this.state.syncingStatus,
       sendProgress: this.state.sendProgress,
