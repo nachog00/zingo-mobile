@@ -1541,7 +1541,9 @@ export default class RPC {
           if (progress.sync_interrupt) {
             await RPC.rpcSetInterruptSyncAfterBatch(GlobalConst.false);
           }
-          resolve(progress.txid);
+          // convert txid -> txids temporarely, I hope.
+          const progressTxids = progress.txid.replaceAll('created txid: ', '').split(' & ').join(', ');
+          resolve(progressTxids);
         }
 
         if (progress.error) {
