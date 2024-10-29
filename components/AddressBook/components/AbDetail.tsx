@@ -197,7 +197,9 @@ const AbDetail: React.FunctionComponent<AbDetailProps> = ({
           onPress={() => {
             doAction(action, label, address);
           }}
-          disabled={action === AddressBookActionEnum.Delete ? false : error || errorAddress ? true : false}
+          disabled={
+            action === AddressBookActionEnum.Delete ? false : error || errorAddress || !label || !address ? true : false
+          }
         />
         <Button
           type={ButtonTypeEnum.Secondary}
