@@ -476,15 +476,24 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
     // likely only when the user install or update the new version with this feature or
     // select automatic in settings.
     if (this.state.selectServer === SelectServerEnum.auto) {
-      setTimeout(() => {
-        this.addLastSnackbar({
-          message: this.state.translate('loadedapp.selectingserver') as string,
-          duration: SnackbarDurationEnum.longer,
+      if (netInfoState.isConnected) {
+        setTimeout(() => {
+          this.addLastSnackbar({
+            message: this.state.translate('loadedapp.selectingserver') as string,
+            duration: SnackbarDurationEnum.longer,
+          });
+        }, 10);
+        // not a different one, can be the same.
+        const someServerIsWorking = await this.selectTheBestServer(false);
+        console.log('some server is working?', someServerIsWorking);
+      } else {
+        // if NO internet then I have to chose a server (the first one)
+        const s: ServerType = SERVER_DEFAULT_0;
+        this.setState({
+          server: s,
         });
-      }, 1000);
-      // not a different one, can be the same.
-      const someServerIsWorking = await this.selectTheBestServer(false);
-      console.log('some server is working?', someServerIsWorking);
+        await SettingsFileImpl.writeSettings(SettingsNameEnum.server, s);
+      }
     }
 
     // Second, check if a wallet exists. Do it async so the basic screen has time to render
