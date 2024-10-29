@@ -668,7 +668,8 @@
     "sapling-balance": "Общий баланс",
     "sapling-spendable-balance": "Доступный баланс",
     "transparent-title": "ПРОЗРАЧНЫЙ (T-адрес)",
-    "transparent-balance": "Общий баланс"
+    "transparent-balance": "Общий баланс",
+    "dust": "Прозрачный объем слишком мал, чтобы его можно было экранировать."
   },
   "uris": {
     "baduri": "Ошибка: нерабочий URI-адрес.",

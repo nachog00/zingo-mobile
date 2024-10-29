@@ -360,7 +360,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
   };
 
   const calculateDisableButtonToShield = (): boolean => {
-    return (somePending ? 0 : shieldingAmount) <= shieldingFee;
+    return (somePending ? 0 : shieldingAmount) <= 0;
   };
 
   const onPressShieldFunds = () => {
@@ -673,28 +673,26 @@ const Header: React.FunctionComponent<HeaderProps> = ({
         </View>
       )}
 
-      {showShieldButton &&
-        setComputingModalVisible &&
-        (mode === ModeEnum.advanced || (mode === ModeEnum.basic && !calculateDisableButtonToShield())) && (
-          <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-            <FadeText style={{ fontSize: 8 }}>
-              {(translate(`history.shield-legend-${calculatePoolsToShield()}`) as string) +
-                ` ${calculateAmountToShield()} ` +
-                (translate('send.fee') as string) +
-                ': ' +
-                Utils.parseNumberFloatToStringLocale(shieldingFee, 8) +
-                ' '}
-            </FadeText>
-            <View style={{ margin: 5, flexDirection: 'row' }}>
-              <Button
-                type={ButtonTypeEnum.Primary}
-                title={translate(`history.shield-${calculatePoolsToShield()}`) as string}
-                onPress={onPressShieldFunds}
-                disabled={calculateDisableButtonToShield()}
-              />
-            </View>
+      {showShieldButton && !calculateDisableButtonToShield() && (
+        <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+          <FadeText style={{ fontSize: 8 }}>
+            {(translate(`history.shield-legend-${calculatePoolsToShield()}`) as string) +
+              ` ${calculateAmountToShield()} ` +
+              (translate('send.fee') as string) +
+              ': ' +
+              Utils.parseNumberFloatToStringLocale(shieldingFee, 8) +
+              ' '}
+          </FadeText>
+          <View style={{ margin: 5, flexDirection: 'row' }}>
+            <Button
+              type={ButtonTypeEnum.Primary}
+              title={translate(`history.shield-${calculatePoolsToShield()}`) as string}
+              onPress={onPressShieldFunds}
+              disabled={calculateDisableButtonToShield()}
+            />
           </View>
-        )}
+        </View>
+      )}
 
       <View
         style={{

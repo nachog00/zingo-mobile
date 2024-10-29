@@ -668,7 +668,8 @@
     "sapling-balance": "Saldo Total",
     "sapling-spendable-balance": "Saldo Disponível",
     "transparent-title": "TRANSPARENTE",
-    "transparent-balance": "Saldo Total"
+    "transparent-balance": "Saldo Total",
+    "dust": "A quantidade transparente é muito pequena para ser protegida."
   },
   "uris": {
     "baduri": "Error: Erro na URI .",

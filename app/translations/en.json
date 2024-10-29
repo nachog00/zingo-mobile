@@ -668,7 +668,8 @@
     "sapling-balance": "Total Balance",
     "sapling-spendable-balance": "Spendable Balance",
     "transparent-title": "TRANSPARENT",
-    "transparent-balance": "Total Balance"
+    "transparent-balance": "Total Balance",
+    "dust": "The transparent amount is too small to be shielded."
   },
   "uris": {
     "baduri": "Error: Bad URI.",

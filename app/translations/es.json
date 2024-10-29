@@ -668,7 +668,8 @@
     "sapling-balance": "Cantidad Total",
     "sapling-spendable-balance": "Cantidad para Gastar",
     "transparent-title": "TRANSPARENTE",
-    "transparent-balance": "Cantidad Total"
+    "transparent-balance": "Cantidad Total",
+    "dust": "La cantidad transparente es demasiado pequeña para ser blindada."
   },
   "uris": {
     "baduri": "Error: URI errónea.",

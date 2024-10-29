@@ -29,7 +29,7 @@ type PoolsProps = {
 
 const Pools: React.FunctionComponent<PoolsProps> = ({ closeModal, setPrivacyOption }) => {
   const context = useContext(ContextAppLoaded);
-  const { totalBalance, info, translate, privacy, addLastSnackbar, somePending, language } = context;
+  const { totalBalance, info, translate, privacy, addLastSnackbar, somePending, language, shieldingAmount } = context;
   const { colors } = useTheme() as unknown as ThemeType;
   const [orchardPool, setOrchardPool] = useState<boolean>(false);
   const [saplingPool, setSaplingPool] = useState<boolean>(false);
@@ -188,6 +188,21 @@ const Pools: React.FunctionComponent<PoolsProps> = ({ closeModal, setPrivacyOpti
                     </DetailLine>
                   </View>
                 </>
+              )}
+
+              {transparentPool && totalBalance.transparentBal > 0 && shieldingAmount === 0 && (
+                <View
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    marginTop: 5,
+                    backgroundColor: colors.card,
+                    padding: 5,
+                    borderRadius: 10,
+                  }}>
+                  <FontAwesomeIcon icon={faInfoCircle} size={20} color={colors.primary} style={{ marginRight: 5 }} />
+                  <FadeText>{translate('pools.dust') as string}</FadeText>
+                </View>
               )}
 
               {somePending && (
