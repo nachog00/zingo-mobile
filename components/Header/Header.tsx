@@ -673,7 +673,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
         </View>
       )}
 
-      {showShieldButton && !calculateDisableButtonToShield() && (
+      {showShieldButton && !calculateDisableButtonToShield() && setComputingModalVisible && (
         <View style={{ justifyContent: 'center', alignItems: 'center' }}>
           <FadeText style={{ fontSize: 8 }}>
             {(translate(`history.shield-legend-${calculatePoolsToShield()}`) as string) +
