@@ -251,7 +251,8 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
               display: 'flex',
               alignItems: 'center',
               marginHorizontal: 10,
-              marginVertical: 20,
+              marginTop: 20,
+              marginBottom: 10,
             }}>
             <AddressItem
               address={address}
