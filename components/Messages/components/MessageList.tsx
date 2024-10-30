@@ -32,14 +32,10 @@ import AddressItem from '../../Components/AddressItem';
 type MessageListProps = {
   doRefresh: () => void;
   toggleMenuDrawer: () => void;
-  poolsMoreInfoOnClick: () => void;
   syncingStatusMoreInfoOnClick: () => void;
-  setZecPrice: (p: number, d: number) => void;
-  setComputingModalVisible: (visible: boolean) => void;
   setPrivacyOption: (value: boolean) => Promise<void>;
   setUfvkViewModalVisible?: (v: boolean) => void;
   setSendPageState: (s: SendPageStateClass) => void;
-  setShieldingAmount: (value: number) => void;
   setScrollToBottom: (value: boolean) => void;
   scrollToBottom: boolean;
   address?: string;
@@ -50,14 +46,10 @@ type MessageListProps = {
 const MessageList: React.FunctionComponent<MessageListProps> = ({
   doRefresh,
   toggleMenuDrawer,
-  poolsMoreInfoOnClick,
   syncingStatusMoreInfoOnClick,
-  setZecPrice,
-  setComputingModalVisible,
   setPrivacyOption,
   setUfvkViewModalVisible,
   setSendPageState,
-  setShieldingAmount,
   setScrollToBottom,
   scrollToBottom,
   address,
@@ -65,7 +57,7 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
   openModal,
 }) => {
   const context = useContext(ContextAppLoaded);
-  const { translate, messages, language, setBackgroundError, addLastSnackbar } = context;
+  const { translate, messages, language, addLastSnackbar } = context;
   const { colors } = useTheme() as unknown as ThemeType;
   moment.locale(language);
 
@@ -265,19 +257,13 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
         </>
       ) : (
         <Header
-          testID=""
-          poolsMoreInfoOnClick={poolsMoreInfoOnClick}
-          syncingStatusMoreInfoOnClick={syncingStatusMoreInfoOnClick}
           toggleMenuDrawer={toggleMenuDrawer}
-          setZecPrice={setZecPrice}
+          syncingStatusMoreInfoOnClick={syncingStatusMoreInfoOnClick}
           title={translate('messages.title') as string}
-          setComputingModalVisible={setComputingModalVisible}
-          setBackgroundError={setBackgroundError}
-          setPrivacyOption={setPrivacyOption}
+          noBalance={true}
+          noPrivacy={true}
           setUfvkViewModalVisible={setUfvkViewModalVisible}
           addLastSnackbar={addLastSnackbar}
-          setShieldingAmount={setShieldingAmount}
-          setScrollToBottom={setScrollToBottom}
         />
       )}
 

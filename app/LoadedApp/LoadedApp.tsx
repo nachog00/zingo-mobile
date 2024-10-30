@@ -2035,13 +2035,9 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
                     doRefresh={this.doRefresh}
                     toggleMenuDrawer={this.toggleMenuDrawer}
                     syncingStatusMoreInfoOnClick={this.syncingStatusMoreInfoOnClick}
-                    poolsMoreInfoOnClick={this.poolsMoreInfoOnClick}
-                    setZecPrice={this.setZecPrice}
-                    setComputingModalVisible={this.setComputingModalVisible}
                     setPrivacyOption={this.setPrivacyOption}
                     setUfvkViewModalVisible={this.setUfvkViewModalVisible}
                     setSendPageState={this.setSendPageState}
-                    setShieldingAmount={this.setShieldingAmount}
                     setScrollToBottom={this.setScrollToBottom}
                     scrollToBottom={scrollToBottom}
                   />
