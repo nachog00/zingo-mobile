@@ -120,6 +120,7 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
   }, [addressFilter, loading, messages, fetchMessagesFiltered]);
 
   useEffect(() => {
+    setLoadMoreButton(numVt < messagesFiltered.length);
     setMessagesSliced(messagesFiltered.slice(-numVt));
   }, [numVt, messagesFiltered]);
 
