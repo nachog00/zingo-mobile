@@ -5,4 +5,5 @@ module.exports = {
   transform: {
     '\\.[jt]sx?$': 'babel-jest',
   },
+  setupFiles: ['./node_modules/react-native-gesture-handler/jestSetup.js'],
 };

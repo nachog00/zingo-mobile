@@ -43,6 +43,7 @@ export default class RPC {
   fnSetInfo: (info: InfoType) => void;
   fnSetTotalBalance: (totalBalance: TotalBalanceClass) => void;
   fnSetValueTransfersList: (vtList: ValueTransferType[]) => void;
+  fnSetMessagesList: (mList: ValueTransferType[]) => void;
   fnSetAllAddresses: (allAddresses: AddressClass[]) => void;
   fnSetSyncingStatus: (syncingStatus: SyncingStatusClass) => void;
   fnSetWalletSettings: (settings: WalletSettingsClass) => void;
@@ -78,7 +79,8 @@ export default class RPC {
 
   constructor(
     fnSetTotalBalance: (totalBalance: TotalBalanceClass) => void,
-    fnSetValueTransfersList: (txlist: ValueTransferType[]) => void,
+    fnSetValueTransfersList: (vtlist: ValueTransferType[]) => void,
+    fnSetMessagesList: (mlist: ValueTransferType[]) => void,
     fnSetAllAddresses: (addresses: AddressClass[]) => void,
     fnSetWalletSettings: (settings: WalletSettingsClass) => void,
     fnSetInfo: (info: InfoType) => void,
@@ -89,6 +91,7 @@ export default class RPC {
   ) {
     this.fnSetTotalBalance = fnSetTotalBalance;
     this.fnSetValueTransfersList = fnSetValueTransfersList;
+    this.fnSetMessagesList = fnSetMessagesList;
     this.fnSetAllAddresses = fnSetAllAddresses;
     this.fnSetWalletSettings = fnSetWalletSettings;
     this.fnSetInfo = fnSetInfo;
@@ -359,10 +362,13 @@ export default class RPC {
     // clean start.
     await this.stopSyncProcess();
 
+    // don't wait for this... it's faster.
+    this.updateData();
+
     // every 15 seconds the App try to Sync the new blocks.
     if (!this.refreshTimerID) {
       this.refreshTimerID = setInterval(() => {
-        console.log('++++++++++ interval try refresh 15 secs');
+        console.log('++++++++++ interval try refresh 15 secs', this.timers);
         this.refresh(false);
       }, 15 * 1000); // 15 seconds
       //console.log('create refresh timer', this.refreshTimerID);
@@ -394,11 +400,10 @@ export default class RPC {
       this.timers.splice(deleted[i], 1);
     }
 
-    await this.updateData();
-
     // Call the refresh after configure to update the UI. Do it in a timeout
     // to allow the UI to render first
     setTimeout(() => {
+      //console.log('FIRST sync run');
       this.refresh(true);
     }, 1000);
   }
@@ -587,16 +592,14 @@ export default class RPC {
   }
 
   async loadWalletData() {
-    await this.fetchTandZandOValueTransfers();
-    console.log('RPC - 3.1 - fetch value transfers');
+    await this.fetchTandZandOValueTransfersAndMessages();
+    //console.log('RPC - 4.1 - fetch value transfers');
     await this.fetchAddresses();
-    console.log('RPC - 3.2 - fetch addresses');
+    //console.log('RPC - 4.2 - fetch addresses');
     await this.fetchTotalBalance();
-    console.log('RPC - 3.3 - fetch total balance');
-    await this.fetchInfoAndServerHeight();
-    console.log('RPC - 3.4 - fetch info & server height');
+    //console.log('RPC - 4.3 - fetch total balance');
     await this.fetchWalletSettings();
-    console.log('RPC - 3.5 - fetch wallet settings');
+    //console.log('RPC - 4.5 - fetch wallet settings');
   }
 
   async updateData() {
@@ -612,13 +615,15 @@ export default class RPC {
       this.updateDataLock = true;
 
       await this.fetchWalletHeight();
-      console.log('RPC - 1 - fetch wallet height');
+      //console.log('RPC - 1 - fetch wallet height');
       await this.fetchWalletBirthday();
-      console.log('RPC - 2 - fetch wallet birthday');
+      //console.log('RPC - 2 - fetch wallet birthday');
+      await this.fetchInfoAndServerHeight();
+      //console.log('RPC - 3 - fetch info & server height');
 
       // And fetch the rest of the data.
       await this.loadWalletData();
-      console.log('RPC - 3 - fetch wallet Data');
+      //console.log('RPC - 4 - fetch wallet Data');
 
       //console.log(`Finished update data at ${lastServerBlockHeight}`);
       this.updateDataLock = false;
@@ -633,19 +638,21 @@ export default class RPC {
   async refresh(fullRefresh: boolean, fullRescan?: boolean) {
     // If we're in refresh, we don't overlap
     if (this.inRefresh) {
-      //console.log('in refresh is true');
+      console.log('REFRESH ----> in refresh is true');
       return;
     }
 
     if (this.syncStatusTimerID) {
-      //console.log('syncStatusTimerID exists already');
+      console.log('REFRESH ----> syncStatusTimerID exists already');
       return;
     }
 
-    await this.updateData();
+    await this.fetchWalletHeight();
+    await this.fetchWalletBirthday();
+    await this.fetchInfoAndServerHeight();
 
     if (!this.lastServerBlockHeight) {
-      //console.log('the last server block is zero');
+      console.log('REFRESH ----> the last server block is zero');
       return;
     }
 
@@ -672,6 +679,7 @@ export default class RPC {
       if (fullRescan) {
         // clean the ValueTransfer list before.
         this.fnSetValueTransfersList([]);
+        this.fnSetMessagesList([]);
         this.fnSetTotalBalance({
           orchardBal: 0,
           privateBal: 0,
@@ -722,6 +730,8 @@ export default class RPC {
         //console.log('sync wallet birthday', this.walletBirthday);
         //console.log('sync', this.syncStatusTimerID);
         console.log(
+          'in progress',
+          ss.in_progress,
           'synced',
           ss.synced_blocks,
           'trialDecryptions',
@@ -753,7 +763,9 @@ export default class RPC {
         // if the syncId change then reset the %
         if (this.prevSyncId !== this.syncId) {
           if (this.prevSyncId !== -1) {
-            await this.updateData();
+            await this.fetchWalletHeight();
+            await this.fetchWalletBirthday();
+            await this.fetchInfoAndServerHeight();
 
             await RPCModule.doSave();
 
@@ -881,7 +893,9 @@ export default class RPC {
           // here we can release the screen...
           this.keepAwake(false);
 
-          await this.updateData();
+          await this.fetchWalletHeight();
+          await this.fetchWalletBirthday();
+          await this.fetchInfoAndServerHeight();
 
           await RPCModule.doSave();
 
@@ -908,7 +922,9 @@ export default class RPC {
           if (this.prevBatchNum !== batchNum) {
             // if finished batches really fast, the App have to save the wallet delayed.
             if (this.prevBatchNum !== -1 && this.batches >= 1) {
-              await this.updateData();
+              await this.fetchWalletHeight();
+              await this.fetchWalletBirthday();
+              await this.fetchInfoAndServerHeight();
 
               await RPCModule.doSave();
               this.batches = 0;
@@ -928,10 +944,10 @@ export default class RPC {
       this.timers.push(this.syncStatusTimerID);
     } else {
       // Already at the latest block
-      //console.log('Already have latest block, waiting for next refresh');
+      console.log('REFRESH ----> Already have latest block, waiting for next refresh');
       // Here I know the sync process is over, I need to inform to the UI.
       this.fnSetSyncingStatus({
-        syncID: this.syncId,
+        syncID: this.syncId < 0 ? 0 : this.syncId,
         totalBatches: 0,
         currentBatch: 0,
         lastBlockWallet: this.lastWalletBlockHeight,
@@ -1214,7 +1230,7 @@ export default class RPC {
   }
 
   // Fetch all T and Z and O ValueTransfers
-  async fetchTandZandOValueTransfers() {
+  async fetchTandZandOValueTransfersAndMessages() {
     try {
       const valueTransfersStr: string = await RPCModule.getValueTransfersList();
       //console.log(valueTransfersStr);
@@ -1231,10 +1247,6 @@ export default class RPC {
 
       //console.log(valueTransfersJSON);
 
-      await this.fetchWalletHeight();
-      await this.fetchWalletBirthday();
-      await this.fetchInfoAndServerHeight();
-
       let vtList: ValueTransferType[] = [];
 
       // oscar idea and I think it is the correct way to build the history of
@@ -1247,7 +1259,7 @@ export default class RPC {
         currentValueTransferList.kind =
           vt.kind === RPCValueTransfersKindEnum.memoToSelf
             ? ValueTransferKindEnum.MemoToSelf
-            : vt.kind === RPCValueTransfersKindEnum.sendToSelf
+            : vt.kind === RPCValueTransfersKindEnum.basic
             ? ValueTransferKindEnum.SendToSelf
             : vt.kind === RPCValueTransfersKindEnum.received
             ? ValueTransferKindEnum.Received
@@ -1255,10 +1267,13 @@ export default class RPC {
             ? ValueTransferKindEnum.Sent
             : vt.kind === RPCValueTransfersKindEnum.shield
             ? ValueTransferKindEnum.Shield
+            : vt.kind === RPCValueTransfersKindEnum.ephemeral320Tex
+            ? ValueTransferKindEnum.Ephemeral320Tex
             : undefined;
         currentValueTransferList.fee = (!vt.transaction_fee ? 0 : vt.transaction_fee) / 10 ** 8;
         currentValueTransferList.zecPrice = !vt.zec_price ? 0 : vt.zec_price;
         if (
+          vt.status === RPCValueTransfersStatusEnum.calculated ||
           vt.status === RPCValueTransfersStatusEnum.transmitted ||
           vt.status === RPCValueTransfersStatusEnum.mempool
         ) {
@@ -1278,20 +1293,102 @@ export default class RPC {
         currentValueTransferList.poolType = !vt.pool_received ? undefined : vt.pool_received;
 
         if (vt.txid.startsWith('xxxxxxxxx')) {
-          console.log('valuetranfer: ', vt);
+          console.log('valuetransfer zingolib: ', vt);
+          console.log('valuetransfer zingo', currentValueTransferList);
           console.log('--------------------------------------------------');
+        }
+        if (vt.status === RPCValueTransfersStatusEnum.calculated) {
+          console.log('CALCULATED ))))))))))))))))))))))))))))))))))');
+          console.log(vt);
         }
         if (vt.status === RPCValueTransfersStatusEnum.transmitted) {
           console.log('TRANSMITTED ))))))))))))))))))))))))))))))))))');
+          console.log(vt);
         }
 
         //console.log(currentValueTransferList);
         vtList.push(currentValueTransferList);
       });
 
-      //console.log(txlist);
+      //console.log(vtlist);
 
-      this.fnSetValueTransfersList(vtList);
+      // to sort the data here can be better
+      // we need to sort the array properly.
+      // by:
+      // - time
+      // - txid
+      // - address
+      // - pool
+      const vtListSorted = [...vtList].sort((a: ValueTransferType, b: ValueTransferType) => {
+        const timeComparison = b.time - a.time;
+        if (timeComparison === 0) {
+          // same time
+          const txidComparison = a.txid.localeCompare(b.txid);
+          if (txidComparison === 0) {
+            // same txid
+            const aAddress = a.address?.toString() || '';
+            const bAddress = b.address?.toString() || '';
+            const addressComparison = aAddress.localeCompare(bAddress);
+            if (addressComparison === 0) {
+              // same address
+              const aPoolType = a.poolType?.toString() || '';
+              const bPoolType = b.poolType?.toString() || '';
+              // last one sort criteria - poolType.
+              return aPoolType.localeCompare(bPoolType);
+            } else {
+              // different address
+              return addressComparison;
+            }
+          } else {
+            // different txid
+            return txidComparison;
+          }
+        } else {
+          // different time
+          return timeComparison;
+        }
+      });
+
+      this.fnSetValueTransfersList(vtListSorted);
+
+      // to sort the data here can be better
+      // we need to sort the array properly.
+      // by:
+      // - time (reverse)
+      // - txid
+      // - address
+      // - pool
+      const mListSorted = [...vtList].sort((a: ValueTransferType, b: ValueTransferType) => {
+        const timeComparison = a.time - b.time; // reverse
+        if (timeComparison === 0) {
+          // same time
+          const txidComparison = a.txid.localeCompare(b.txid);
+          if (txidComparison === 0) {
+            // same txid
+            const aAddress = a.address?.toString() || '';
+            const bAddress = b.address?.toString() || '';
+            const addressComparison = aAddress.localeCompare(bAddress);
+            if (addressComparison === 0) {
+              // same address
+              const aPoolType = a.poolType?.toString() || '';
+              const bPoolType = b.poolType?.toString() || '';
+              // last one sort criteria - poolType.
+              return aPoolType.localeCompare(bPoolType);
+            } else {
+              // different address
+              return addressComparison;
+            }
+          } else {
+            // different txid
+            return txidComparison;
+          }
+        } else {
+          // different time
+          return timeComparison;
+        }
+      });
+
+      this.fnSetMessagesList(mListSorted);
     } catch (error) {
       console.log(`Critical Error txs list value transfers ${error}`);
       // relaunch the interval tasks just in case they are aborted.
@@ -1446,7 +1543,9 @@ export default class RPC {
           if (progress.sync_interrupt) {
             await RPC.rpcSetInterruptSyncAfterBatch(GlobalConst.false);
           }
-          resolve(progress.txid);
+          // convert txid -> txids temporarely, I hope.
+          const progressTxids = progress.txid.replaceAll('created txid: ', '').split(' & ').join(', ');
+          resolve(progressTxids);
         }
 
         if (progress.error) {

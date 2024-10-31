@@ -114,13 +114,9 @@ describe('Component Messages - test', () => {
         <Messages
           doRefresh={onFunction}
           toggleMenuDrawer={onFunction}
-          poolsMoreInfoOnClick={onFunction}
           syncingStatusMoreInfoOnClick={onFunction}
-          setZecPrice={onFunction}
-          setComputingModalVisible={onFunction}
           setPrivacyOption={onFunction}
           setSendPageState={onFunction}
-          setShieldingAmount={onFunction}
           setScrollToBottom={onFunction}
           scrollToBottom={false}
         />
@@ -141,13 +137,9 @@ describe('Component Messages - test', () => {
         <Messages
           doRefresh={onFunction}
           toggleMenuDrawer={onFunction}
-          poolsMoreInfoOnClick={onFunction}
           syncingStatusMoreInfoOnClick={onFunction}
-          setZecPrice={onFunction}
-          setComputingModalVisible={onFunction}
           setPrivacyOption={onFunction}
           setSendPageState={onFunction}
-          setShieldingAmount={onFunction}
           setScrollToBottom={onFunction}
           scrollToBottom={false}
         />

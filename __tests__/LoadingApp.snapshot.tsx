@@ -107,6 +107,8 @@ jest.mock('react-native-keychain', () => ({
   setGenericPassword: jest.fn(),
   getGenericPassword: jest.fn(),
   resetGenericPassword: jest.fn(),
+  hasGenericPassword: jest.fn(),
+  getSupportedBiometryType: jest.fn(),
 }));
 
 // test suite

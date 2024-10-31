@@ -382,6 +382,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       totalBalance: null,
       addresses: null,
       valueTransfers: null,
+      messages: null,
       walletSettings: {} as WalletSettingsClass,
       syncingStatus: {} as SyncingStatusClass,
       sendProgress: {} as SendProgressClass,
@@ -451,6 +452,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
     this.rpc = new RPC(
       this.setTotalBalance,
       this.setValueTransfersList,
+      this.setMessagesList,
       this.setAllAddresses,
       this.setWalletSettings,
       this.setInfo,
@@ -466,6 +468,17 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
   }
 
   componentDidMount = async () => {
+    const netInfoState = await NetInfo.fetch();
+    this.setState({
+      netInfo: {
+        isConnected: netInfoState.isConnected,
+        type: netInfoState.type,
+        isConnectionExpensive: netInfoState.details && netInfoState.details.isConnectionExpensive,
+      },
+    });
+
+    //console.log('DID MOUNT APPLOADED...', netInfoState);
+
     this.clearToAddr();
 
     // Configure the RPC to start doing refreshes
@@ -836,6 +849,19 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
                       this.state.info.currencyName
                     : '');
                 title = this.state.translate('loadedapp.send-menu') as string;
+              } else if (vtNew[0].kind === ValueTransferKindEnum.Ephemeral320Tex) {
+                // not so sure about this `kind`... this is enough for now.
+                message =
+                  (this.state.translate('loadedapp.valuetransfer-confirmed') as string) +
+                  (this.state.translate('history.ephemeral320tex') as string) +
+                  (vtNew[0].fee
+                    ? ((' ' + this.state.translate('send.fee')) as string) +
+                      ' ' +
+                      Utils.parseNumberFloatToStringLocale(vtNew[0].fee, 8) +
+                      ' ' +
+                      this.state.info.currencyName
+                    : '');
+                title = this.state.translate('loadedapp.send-menu') as string;
               } else if (vtNew[0].kind === ValueTransferKindEnum.Shield) {
                 message =
                   (this.state.translate('loadedapp.incoming-funds') as string) +
@@ -877,6 +903,13 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
         },
         pending === 0 ? 250 : 0,
       );
+    }
+  };
+
+  setMessagesList = (messages: ValueTransferType[]) => {
+    if (!isEqual(this.state.messages, messages)) {
+      //console.log('fetch messages');
+      this.setState({ messages });
     }
   };
 
@@ -1571,6 +1604,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       totalBalance: this.state.totalBalance,
       addresses: this.state.addresses,
       valueTransfers: this.state.valueTransfers,
+      messages: this.state.messages,
       walletSettings: this.state.walletSettings,
       syncingStatus: this.state.syncingStatus,
       sendProgress: this.state.sendProgress,
@@ -1643,7 +1677,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       );
     };
 
-    console.log('render LoadedAppClass - 3', this.state.netInfo);
+    //console.log('render LoadedAppClass - 3', this.state.netInfo);
     //console.log('vt', valueTransfers);
     //console.log('ad', addresses);
     //console.log('ba', totalBalance);
@@ -1991,7 +2025,6 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
                     setUaAddress={this.setUaAddress}
                     toggleMenuDrawer={this.toggleMenuDrawer}
                     syncingStatusMoreInfoOnClick={this.syncingStatusMoreInfoOnClick}
-                    setPrivacyOption={this.setPrivacyOption}
                     setUfvkViewModalVisible={this.setUfvkViewModalVisible}
                   />
                 )}
@@ -2002,13 +2035,9 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
                     doRefresh={this.doRefresh}
                     toggleMenuDrawer={this.toggleMenuDrawer}
                     syncingStatusMoreInfoOnClick={this.syncingStatusMoreInfoOnClick}
-                    poolsMoreInfoOnClick={this.poolsMoreInfoOnClick}
-                    setZecPrice={this.setZecPrice}
-                    setComputingModalVisible={this.setComputingModalVisible}
                     setPrivacyOption={this.setPrivacyOption}
                     setUfvkViewModalVisible={this.setUfvkViewModalVisible}
                     setSendPageState={this.setSendPageState}
-                    setShieldingAmount={this.setShieldingAmount}
                     setScrollToBottom={this.setScrollToBottom}
                     scrollToBottom={scrollToBottom}
                   />
@@ -2036,7 +2065,6 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
                         setUaAddress={this.setUaAddress}
                         toggleMenuDrawer={this.toggleMenuDrawer}
                         syncingStatusMoreInfoOnClick={this.syncingStatusMoreInfoOnClick}
-                        setPrivacyOption={this.setPrivacyOption}
                         setUfvkViewModalVisible={this.setUfvkViewModalVisible}
                       />
                     )}

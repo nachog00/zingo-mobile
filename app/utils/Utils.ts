@@ -357,10 +357,12 @@ export default class Utils {
     );
   }
 
-  static async isMessagesAddress(vt: ValueTransferType, serverChainName: string): Promise<boolean> {
+  static isMessagesAddress(vt: ValueTransferType): boolean {
     // only for orchard or sapling
     if (vt.address) {
-      return await Utils.isValidOrchardOrSaplingAddress(vt.address, serverChainName);
+      // the performance in the list is really bad if here I asked properly
+      // to zingolib (address_parse command) about the type of the address.
+      return !vt.address.startsWith('t');
     } else {
       const memoTotal = vt.memos && vt.memos.length > 0 ? vt.memos.join('\n') : '';
       if (memoTotal.includes('\nReply to: \n')) {

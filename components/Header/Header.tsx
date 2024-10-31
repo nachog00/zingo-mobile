@@ -139,6 +139,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
   moment.locale(language);
 
   const opacityValue = useRef(new Animated.Value(1)).current;
+  const animationRef = useRef<Animated.CompositeAnimation | null>(null);
   const [showShieldButton, setShowShieldButton] = useState<boolean>(false);
   const [blocksRemaining, setBlocksRemaining] = useState<number>(0);
   const [shieldingFee, setShieldingFee] = useState<number>(0);
@@ -333,18 +334,19 @@ const Header: React.FunctionComponent<HeaderProps> = ({
         }),
       ]),
     );
+
+    animationRef.current = animation;
+
     if (!noSyncingStatus) {
       if (syncingStatus.inProgress) {
-        animation.start();
+        animationRef.current?.start();
       } else {
-        animation.stop();
+        animationRef.current?.stop();
       }
     }
 
     return () => {
-      if (!noSyncingStatus) {
-        animation.stop();
-      }
+      animationRef.current?.stop();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncingStatus.inProgress, noSyncingStatus]);
@@ -358,7 +360,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
   };
 
   const calculateDisableButtonToShield = (): boolean => {
-    return (somePending ? 0 : shieldingAmount) <= shieldingFee;
+    return (somePending ? 0 : shieldingAmount) <= 0;
   };
 
   const onPressShieldFunds = () => {
@@ -436,7 +438,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
     </TouchableOpacity>
   );
 
-  console.log('render header &&&&&&&&&&&&&&&&&&&&& netinfo', netInfo);
+  //console.log('render header &&&&&&&&&&&&&&&&&&&&& syncstatus', syncingStatus);
 
   return (
     <View
@@ -671,28 +673,26 @@ const Header: React.FunctionComponent<HeaderProps> = ({
         </View>
       )}
 
-      {showShieldButton &&
-        setComputingModalVisible &&
-        (mode === ModeEnum.advanced || (mode === ModeEnum.basic && !calculateDisableButtonToShield())) && (
-          <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-            <FadeText style={{ fontSize: 8 }}>
-              {(translate(`history.shield-legend-${calculatePoolsToShield()}`) as string) +
-                ` ${calculateAmountToShield()} ` +
-                (translate('send.fee') as string) +
-                ': ' +
-                Utils.parseNumberFloatToStringLocale(shieldingFee, 8) +
-                ' '}
-            </FadeText>
-            <View style={{ margin: 5, flexDirection: 'row' }}>
-              <Button
-                type={ButtonTypeEnum.Primary}
-                title={translate(`history.shield-${calculatePoolsToShield()}`) as string}
-                onPress={onPressShieldFunds}
-                disabled={calculateDisableButtonToShield()}
-              />
-            </View>
+      {showShieldButton && !calculateDisableButtonToShield() && setComputingModalVisible && (
+        <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+          <FadeText style={{ fontSize: 8 }}>
+            {(translate(`history.shield-legend-${calculatePoolsToShield()}`) as string) +
+              ` ${calculateAmountToShield()} ` +
+              (translate('send.fee') as string) +
+              ': ' +
+              Utils.parseNumberFloatToStringLocale(shieldingFee, 8) +
+              ' '}
+          </FadeText>
+          <View style={{ margin: 5, flexDirection: 'row' }}>
+            <Button
+              type={ButtonTypeEnum.Primary}
+              title={translate(`history.shield-${calculatePoolsToShield()}`) as string}
+              onPress={onPressShieldFunds}
+              disabled={calculateDisableButtonToShield()}
+            />
           </View>
-        )}
+        </View>
+      )}
 
       <View
         style={{
@@ -728,7 +728,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
           {readOnly && (
             <>
               {setUfvkViewModalVisible &&
-              !(mode === ModeEnum.basic && valueTransfers && valueTransfers.length <= 0) &&
+              !(mode === ModeEnum.basic && valueTransfers !== null && valueTransfers.length <= 0) &&
               !(mode === ModeEnum.basic && totalBalance && totalBalance.total <= 0) ? (
                 <TouchableOpacity onPress={() => ufvkShowModal()}>
                   <FontAwesomeIcon icon={faSnowflake} size={24} color={colors.zingo} />

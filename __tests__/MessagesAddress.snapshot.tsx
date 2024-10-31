@@ -114,13 +114,9 @@ describe('Component Messages Address - test', () => {
         <MessagesAddress
           doRefresh={onFunction}
           toggleMenuDrawer={onFunction}
-          poolsMoreInfoOnClick={onFunction}
           syncingStatusMoreInfoOnClick={onFunction}
-          setZecPrice={onFunction}
-          setComputingModalVisible={onFunction}
           setPrivacyOption={onFunction}
           setSendPageState={onFunction}
-          setShieldingAmount={onFunction}
           setScrollToBottom={onFunction}
           scrollToBottom={false}
           address={mockAddresses[0].uaAddress}

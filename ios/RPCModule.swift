@@ -354,7 +354,7 @@ class RPCModule: NSObject {
   @objc(getLatestBlock:resolve:reject:)
   func getLatestBlock(_ server: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
       let dict: [String: Any] = ["server": server, "resolve": resolve]
-       DispatchQueue.global().async { [weak self] in
+      DispatchQueue.global().async { [weak self] in
           if let self = self {
               self.fnGetLatestBlock(dict)
           }
@@ -378,7 +378,11 @@ class RPCModule: NSObject {
   @objc(getDonationAddress:reject:)
   func getDonationAddress(_ resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
       let dict: [String: Any] = ["resolve": resolve]
-      self.fnGetDonationAddress(dict)
+      DispatchQueue.global().async { [weak self] in
+          if let self = self {
+              self.fnGetDonationAddress(dict)
+          }
+      }
   }
 
   func fnGetZenniesDonationAddress(_ dict: [AnyHashable: Any]) {
@@ -398,13 +402,11 @@ class RPCModule: NSObject {
   @objc(getZenniesDonationAddress:reject:)
   func getZenniesDonationAddress(_ resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
       let dict: [String: Any] = ["resolve": resolve]
-      self.fnGetZenniesDonationAddress(dict)
-  }
-
-  @objc(getValueTransfersList:reject:)
-  func getValueTransfersList(_ resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
-      let dict: [String: Any] = ["resolve": resolve]
-      self.fnGetValueTransfersList(dict)
+      DispatchQueue.global().async { [weak self] in
+          if let self = self {
+              self.fnGetZenniesDonationAddress(dict)
+          }
+      }
   }
 
   func fnGetValueTransfersList(_ dict: [AnyHashable: Any]) {
@@ -421,10 +423,14 @@ class RPCModule: NSObject {
       }
   }
 
-  @objc(getTransactionSummariesList:reject:)
-  func getTransactionSummariesList(_ resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+  @objc(getValueTransfersList:reject:)
+  func getValueTransfersList(_ resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
       let dict: [String: Any] = ["resolve": resolve]
-      self.fnGetTransactionSummariesList(dict)
+      DispatchQueue.global().async { [weak self] in
+          if let self = self {
+              self.fnGetValueTransfersList(dict)
+          }
+      }
   }
 
   func fnGetTransactionSummariesList(_ dict: [AnyHashable: Any]) {
@@ -441,10 +447,14 @@ class RPCModule: NSObject {
       }
   }
 
-  @objc(setCryptoDefaultProvider:reject:)
-  func setCryptoDefaultProvider(_ resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+  @objc(getTransactionSummariesList:reject:)
+  func getTransactionSummariesList(_ resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
       let dict: [String: Any] = ["resolve": resolve]
-      self.fnSetCryptoDefaultProvider(dict)
+      DispatchQueue.global().async { [weak self] in
+          if let self = self {
+              self.fnGetTransactionSummariesList(dict)
+          }
+      }
   }
 
   func fnSetCryptoDefaultProvider(_ dict: [AnyHashable: Any]) {
@@ -457,6 +467,16 @@ class RPCModule: NSObject {
           NSLog(err)
           if let resolve = dict["resolve"] as? RCTPromiseResolveBlock {
               resolve(err)
+          }
+      }
+  }
+
+  @objc(setCryptoDefaultProvider:reject:)
+  func setCryptoDefaultProvider(_ resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+      let dict: [String: Any] = ["resolve": resolve]
+      DispatchQueue.global().async { [weak self] in
+          if let self = self {
+              self.fnSetCryptoDefaultProvider(dict)
           }
       }
   }

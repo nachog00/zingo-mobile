@@ -61,6 +61,8 @@ jest.mock('react-native-gesture-handler', () => {
     dropGestureHandler: jest.fn(),
     updateGestureHandler: jest.fn(),
     forceTouchAvailable: jest.fn(),
+    hasGenericPassword: jest.fn(),
+    getSupportedBiometryType: jest.fn(),
     State: {},
     Directions: {},
   };

@@ -1,6 +1,5 @@
 import * as Keychain from 'react-native-keychain';
 import { GlobalConst, WalletType } from './AppState';
-import { isEqual } from 'lodash';
 
 const options = (biometrics: Keychain.BIOMETRY_TYPE | null): Keychain.Options => {
   return {
@@ -17,8 +16,8 @@ const options = (biometrics: Keychain.BIOMETRY_TYPE | null): Keychain.Options =>
 };
 
 export const saveRecoveryWalletInfo = async (keys: WalletType): Promise<void> => {
-  if (!keys.seed) {
-    console.log('no seed to store');
+  if (!keys.seed && !keys.ufvk) {
+    console.log('no seed or ufvk to store');
     return;
   }
   try {
@@ -30,14 +29,6 @@ export const saveRecoveryWalletInfo = async (keys: WalletType): Promise<void> =>
     console.log('keys saved correctly');
     //console.log('key:', GlobalConst.keyKeyChain);
     //console.log('value:', keys);
-
-    // let's check if everything is correct
-    const storedKeys = await getRecoveryWalletInfo();
-    if (!isEqual(keys, storedKeys)) {
-      // removing just in case
-      console.log('Error checking stored keys - removing keys');
-      await removeRecoveryWalletInfo();
-    }
   } catch (error) {
     console.log('Error saving keys', error);
   }
@@ -65,49 +56,15 @@ export const getRecoveryWalletInfo = async (): Promise<WalletType> => {
   return {} as WalletType;
 };
 
-export const getStorageRecoveryWalletInfo = async (): Promise<string> => {
-  try {
-    const credentials = await Keychain.getGenericPassword(options(await Keychain.getSupportedBiometryType()));
-    if (credentials) {
-      console.log('keys read correctly', credentials);
-      if (credentials.username === GlobalConst.keyKeyChain && credentials.service === GlobalConst.serviceKeyChain) {
-        return credentials.storage;
-      } else {
-        console.log('no match the key');
-      }
-    } else {
-      console.log('Error no keys stored');
-    }
-  } catch (error) {
-    console.log('Error getting keys:', error);
-  }
-  return '';
-};
-
 export const hasRecoveryWalletInfo = async (): Promise<boolean> => {
-  const keys: WalletType = await getRecoveryWalletInfo();
-  if (keys.seed) {
-    return true;
-  } else {
-    return false;
-  }
+  //const keys: WalletType = await getRecoveryWalletInfo();
+  return await Keychain.hasGenericPassword(options(await Keychain.getSupportedBiometryType()));
 };
 
 export const createUpdateRecoveryWalletInfo = async (keys: WalletType): Promise<void> => {
-  if (await hasRecoveryWalletInfo()) {
-    // have Wallet Keys
-    const oldKeys: WalletType = await getRecoveryWalletInfo();
-    if (!isEqual(keys, oldKeys)) {
-      // if different update
-      console.log('updating keys');
-      await removeRecoveryWalletInfo();
-      await saveRecoveryWalletInfo(keys);
-    }
-  } else {
-    // have not Wallet Keys
-    console.log('creating keys');
-    await saveRecoveryWalletInfo(keys);
-  }
+  // have not Wallet Keys
+  console.log('creating keys');
+  await saveRecoveryWalletInfo(keys);
 };
 
 export const removeRecoveryWalletInfo = async (): Promise<void> => {

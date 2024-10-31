@@ -74,7 +74,7 @@ const History: React.FunctionComponent<HistoryProps> = ({
   const [valueTransferDetailIndex, setValueTransferDetailIndex] = useState<number>(-1);
   const [numVt, setNumVt] = useState<number>(50);
   const [loadMoreButton, setLoadMoreButton] = useState<boolean>(false);
-  const [valueTransfersSorted, setValueTransfersSorted] = useState<ValueTransferType[]>([]);
+  const [valueTransfersSliced, setValueTransfersSliced] = useState<ValueTransferType[]>([]);
   const [isAtTop, setIsAtTop] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -83,56 +83,23 @@ const History: React.FunctionComponent<HistoryProps> = ({
 
   var lastMonth = '';
 
-  const fetchValueTransfersSorted = useMemo(() => {
-    // we need to sort the array properly.
-    // by:
-    // - time
-    // - txid
-    // - address
-    // - pool
+  const fetchValueTransfersSliced = useMemo(() => {
     if (!valueTransfers) {
       return [] as ValueTransferType[];
     }
-    return valueTransfers
-      .sort((a: ValueTransferType, b: ValueTransferType) => {
-        const timeComparison = b.time - a.time;
-        if (timeComparison === 0) {
-          // same time
-          const txidComparison = a.txid.localeCompare(b.txid);
-          if (txidComparison === 0) {
-            // same txid
-            const aAddress = a.address?.toString() || '';
-            const bAddress = b.address?.toString() || '';
-            const addressComparison = aAddress.localeCompare(bAddress);
-            if (addressComparison === 0) {
-              // same address
-              const aPoolType = a.poolType?.toString() || '';
-              const bPoolType = b.poolType?.toString() || '';
-              // last one sort criteria - poolType.
-              return aPoolType.localeCompare(bPoolType);
-            } else {
-              // different address
-              return addressComparison;
-            }
-          } else {
-            // different txid
-            return txidComparison;
-          }
-        } else {
-          // different time
-          return timeComparison;
-        }
-      })
-      .slice(0, numVt);
+    return valueTransfers.slice(0, numVt);
   }, [valueTransfers, numVt]);
 
   useEffect(() => {
-    setLoadMoreButton(numVt < (valueTransfers ? valueTransfers.length : 0));
-    setValueTransfersSorted(fetchValueTransfersSorted);
-    setTimeout(() => {
-      setLoading(false);
-    }, 500);
-  }, [fetchValueTransfersSorted, numVt, valueTransfers]);
+    if (valueTransfers !== null) {
+      setLoadMoreButton(numVt < (valueTransfers ? valueTransfers.length : 0));
+      const vts = fetchValueTransfersSliced;
+      setValueTransfersSliced(vts);
+      setTimeout(() => {
+        setLoading(false);
+      }, 500);
+    }
+  }, [fetchValueTransfersSliced, numVt, valueTransfers]);
 
   useEffect(() => {
     if (scrollToTop) {
@@ -148,8 +115,8 @@ const History: React.FunctionComponent<HistoryProps> = ({
   const moveValueTransferDetail = (index: number, type: number) => {
     // -1 -> Previous ValueTransfer
     //  1 -> Next ValueTransfer
-    if ((index > 0 && type === -1) || (index < valueTransfersSorted.length - 1 && type === 1)) {
-      setValueTransferDetail(valueTransfersSorted[index + type]);
+    if ((index > 0 && type === -1) || (index < valueTransfersSliced.length - 1 && type === 1)) {
+      setValueTransferDetail(valueTransfersSliced[index + type]);
       setValueTransferDetailIndex(index + type);
     }
   };
@@ -185,8 +152,8 @@ const History: React.FunctionComponent<HistoryProps> = ({
         onRequestClose={() => setValueTransferDetailModalShowing(false)}>
         <ValueTransferDetail
           index={valueTransferDetailIndex}
-          length={valueTransfersSorted.length}
-          totalLength={valueTransfers ? valueTransfers.length : 0}
+          length={valueTransfersSliced.length}
+          totalLength={valueTransfers !== null ? valueTransfers.length : 0}
           vt={valueTransferDetail}
           closeModal={() => setValueTransferDetailModalShowing(false)}
           openModal={() => setValueTransferDetailModalShowing(true)}
@@ -206,13 +173,9 @@ const History: React.FunctionComponent<HistoryProps> = ({
             doRefresh={doRefresh}
             toggleMenuDrawer={toggleMenuDrawer}
             syncingStatusMoreInfoOnClick={syncingStatusMoreInfoOnClick}
-            poolsMoreInfoOnClick={poolsMoreInfoOnClick}
-            setZecPrice={setZecPrice}
-            setComputingModalVisible={setComputingModalVisible}
             setPrivacyOption={setPrivacyOption}
             setUfvkViewModalVisible={setUfvkViewModalVisible}
             setSendPageState={setSendPageState}
-            setShieldingAmount={setShieldingAmount}
             setScrollToBottom={setScrollToBottom}
             scrollToBottom={scrollToBottom}
             address={Utils.messagesAddress(valueTransferDetail)}
@@ -261,9 +224,9 @@ const History: React.FunctionComponent<HistoryProps> = ({
               marginTop: 10,
               width: '100%',
             }}>
-            {valueTransfersSorted &&
-              valueTransfersSorted.length > 0 &&
-              valueTransfersSorted.flatMap((vt, index) => {
+            {valueTransfersSliced &&
+              valueTransfersSliced.length > 0 &&
+              valueTransfersSliced.flatMap((vt, index) => {
                 let txmonth = vt && vt.time ? moment(vt.time * 1000).format('MMM YYYY') : '--- ----';
 
                 var month = '';
@@ -282,9 +245,9 @@ const History: React.FunctionComponent<HistoryProps> = ({
                     setValueTransferDetailIndex={(iii: number) => setValueTransferDetailIndex(iii)}
                     setValueTransferDetailModalShowing={(bbb: boolean) => setValueTransferDetailModalShowing(bbb)}
                     nextLineWithSameTxid={
-                      index >= valueTransfersSorted.length - 1
+                      index >= valueTransfersSliced.length - 1
                         ? false
-                        : valueTransfersSorted[index + 1].txid === vt.txid
+                        : valueTransfersSliced[index + 1].txid === vt.txid
                     }
                     setSendPageState={setSendPageState}
                     setMessagesAddressModalShowing={(bbb: boolean) => setMessagesAddressModalShowing(bbb)}
@@ -308,7 +271,7 @@ const History: React.FunctionComponent<HistoryProps> = ({
               </View>
             ) : (
               <>
-                {!!valueTransfersSorted && !!valueTransfersSorted.length && (
+                {!!valueTransfersSliced && !!valueTransfersSliced.length && (
                   <View
                     style={{
                       display: 'flex',

@@ -1,6 +1,6 @@
 {
   "zingo": "Zingo",
-  "version": "zingo-1.5.0 (190)",
+  "version": "zingo-1.8.1 (199)",
   "loading": "carregando...",
   "connectingserver": "Conectando-se ao servidor...",
   "wait": "Aguarde um momento...",
@@ -96,8 +96,8 @@
     "serversecondtry": "Não parece haver nenhum problema com o servidor. Algo mais está acontecendo.",
     "alert-donation-title": "APOIAR A ZINGOLABS",
     "alert-donation-body": "Você quer ajudar o ZingoLabs a tornar o Zcash mais útil? Opte por dar uma gorjeta de um Zenny (0.01 ZEC) para ZingoLabs em cada transação! Se sim, pressione confirmar, caso contrário, pressione Cancelar.",
-    "recoverseed": "Recuperar a última Frases de Recuperação usada",
-    "recoverseedinstall": "Recuperou a última Frases de Recuperação usada neste dispositivo:",
+    "recoverkeys": "Recuperar a última Clave de Recuperação usada",
+    "recoverkeysinstall": "Recuperou a última Clave de Recuperação usada neste dispositivo:",
     "noservers": "Nenhum dos servidores da lista está disponível, provavelmente é um erro de conexão."
   },
   "loadedapp": {
@@ -533,6 +533,7 @@
     "receiving": "...Recebendo... ",
     "sendingtoself": "...Enviando-si-Mesmo... ",
     "shielding": "...Blindagem...",
+    "ephemeral320tex": "Efêmero-320-Tex",
     "time": "Tempo",
     "confirmations": "Confirmações",
     "txid": "ID da Transação",
@@ -557,6 +558,7 @@
     "address-https": "Endereço Zingo-Authenticated",
     "type": "Tipo",
     "not-confirmed": "Transação ainda não confirmada",
+    "calculated": "Calculada",
     "transmitted": "Transmitida",
     "mempool": "Em Mempool"
   },
@@ -666,7 +668,8 @@
     "sapling-balance": "Saldo Total",
     "sapling-spendable-balance": "Saldo Disponível",
     "transparent-title": "TRANSPARENTE",
-    "transparent-balance": "Saldo Total"
+    "transparent-balance": "Saldo Total",
+    "dust": "A quantidade transparente é muito pequena para ser protegida."
   },
   "uris": {
     "baduri": "Error: Erro na URI .",

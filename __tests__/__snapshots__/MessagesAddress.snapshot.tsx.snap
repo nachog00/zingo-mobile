@@ -151,8 +151,9 @@ exports[`Component Messages Address - test Messages Address - snapshot 1`] = `
         {
           "alignItems": "center",
           "display": "flex",
+          "marginBottom": 10,
           "marginHorizontal": 10,
-          "marginVertical": 20,
+          "marginTop": 20,
         }
       }
     >

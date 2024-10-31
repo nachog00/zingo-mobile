@@ -1,6 +1,6 @@
 {
   "zingo": "Zingo",
-  "version": "zingo-1.5.0 (190)",
+  "version": "zingo-1.8.1 (199)",
   "loading": "loading...",
   "connectingserver": "Connecting to the server...",
   "wait": "Please wait...",
@@ -96,8 +96,8 @@
     "serversecondtry": "It doesn't seem to be a problem with the server. Someting else is happening.",
     "alert-donation-title": "TIP ZINGOLABS",
     "alert-donation-body": "Do you want to help ZingoLabs make Zcash more useful? Opt in to tip one Zenny (0.01 ZEC) to ZingoLabs with each transaction! If so, press confirm, otherwise press Cancel.",
-    "recoverseed": "Recover last Seed Phrase used",
-    "recoverseedinstall": "Recovered the last Seed Phrase used in this device:",
+    "recoverkeys": "Recover last Keys used",
+    "recoverkeysinstall": "Recovered the last Keys used in this device:",
     "noservers": "None of the servers on the list are available, it is probably a connection error."
   },
   "loadedapp": {
@@ -533,6 +533,7 @@
     "receiving": "...Receiving... ",
     "sendingtoself": "...Sending-to-Self... ",
     "shielding": "...Shielding...",
+    "ephemeral320tex": "Ephemeral-320-Tex",
     "time": "Time",
     "confirmations": "Confirmations",
     "txid": "Transaction ID",
@@ -557,6 +558,7 @@
     "address-https": "Zingo-Authenticated Address",
     "type": "Type",
     "not-confirmed": "Transaction not yet confirmed",
+    "calculated": "Calculated",
     "transmitted": "Transmitted",
     "mempool": "In Mempool"
   },
@@ -666,7 +668,8 @@
     "sapling-balance": "Total Balance",
     "sapling-spendable-balance": "Spendable Balance",
     "transparent-title": "TRANSPARENT",
-    "transparent-balance": "Total Balance"
+    "transparent-balance": "Total Balance",
+    "dust": "The transparent amount is too small to be shielded."
   },
   "uris": {
     "baduri": "Error: Bad URI.",

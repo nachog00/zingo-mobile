@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useContext, useEffect, useState } from 'react';
-import { View, ScrollView, SafeAreaView } from 'react-native';
+import { View, ScrollView, SafeAreaView, ActivityIndicator } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 
 import ZecAmount from '../Components/ZecAmount';
@@ -29,11 +29,11 @@ type PoolsProps = {
 
 const Pools: React.FunctionComponent<PoolsProps> = ({ closeModal, setPrivacyOption }) => {
   const context = useContext(ContextAppLoaded);
-  const { totalBalance, info, translate, privacy, addLastSnackbar, somePending, language } = context;
+  const { totalBalance, info, translate, privacy, addLastSnackbar, somePending, language, shieldingAmount } = context;
   const { colors } = useTheme() as unknown as ThemeType;
-  const [orchardPool, setOrchardPool] = useState<boolean>(true);
-  const [saplingPool, setSaplingPool] = useState<boolean>(true);
-  const [transparentPool, setTransparentPool] = useState<boolean>(true);
+  const [orchardPool, setOrchardPool] = useState<boolean>(false);
+  const [saplingPool, setSaplingPool] = useState<boolean>(false);
+  const [transparentPool, setTransparentPool] = useState<boolean>(false);
   moment.locale(language);
 
   useEffect(() => {
@@ -44,7 +44,7 @@ const Pools: React.FunctionComponent<PoolsProps> = ({ closeModal, setPrivacyOpti
       const walletKindStr: string = await RPCModule.execute(CommandEnum.walletKind, '');
       try {
         const walletKindJSON: RPCWalletKindType = await JSON.parse(walletKindStr);
-        console.log(walletKindJSON);
+        //console.log(walletKindJSON);
         setOrchardPool(walletKindJSON.orchard);
         setSaplingPool(walletKindJSON.sapling);
         setTransparentPool(walletKindJSON.transparent);
@@ -82,6 +82,9 @@ const Pools: React.FunctionComponent<PoolsProps> = ({ closeModal, setPrivacyOpti
         <View style={{ display: 'flex', margin: 20, marginBottom: 30 }}>
           {totalBalance && (
             <>
+              {!orchardPool && !saplingPool && !transparentPool && (
+                <ActivityIndicator size="large" color={colors.primary} style={{ marginVertical: 20 }} />
+              )}
               {orchardPool && (
                 <>
                   <BoldText>{translate('pools.orchard-title') as string}</BoldText>
@@ -185,6 +188,21 @@ const Pools: React.FunctionComponent<PoolsProps> = ({ closeModal, setPrivacyOpti
                     </DetailLine>
                   </View>
                 </>
+              )}
+
+              {transparentPool && totalBalance.transparentBal > 0 && shieldingAmount === 0 && (
+                <View
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    marginTop: 5,
+                    backgroundColor: colors.card,
+                    padding: 5,
+                    borderRadius: 10,
+                  }}>
+                  <FontAwesomeIcon icon={faInfoCircle} size={20} color={colors.primary} style={{ marginRight: 5 }} />
+                  <FadeText>{translate('pools.dust') as string}</FadeText>
+                </View>
               )}
 
               {somePending && (
