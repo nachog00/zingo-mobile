@@ -1,4 +1,4 @@
-const { log, device, by, element, expect } = require('detox');
+const { log, device, by, expect } = require('detox');
 
 import { loadRecipientWallet } from './e2e-utils/loadRecipientWallet.js';
 
@@ -13,17 +13,26 @@ describe('Renders wallet data correctly.', () => {
       .toExist()
       .withTimeout(50000);
     await element(by.id('header.shield')).tap();
-    // Confirm dialog
+    // // Confirm dialog
     await expect(element(by.text('CONFIRM'))).toBeVisible();
     await element(by.text('CONFIRM')).tap();
+    // Wait for confirmation
+    await waitFor(element(by.text(/Transmitted/gi)))
+      .toExist()
+      .withTimeout(50000);
+
     // Close and reopen to check that the transaction does not disappear
     await device.launchApp({
       newInstance: true,
     });
 
-    await waitFor(element(by.id('vt-1'))).toExist();
-    const element = await element(by.id('vt-1'));
-    console.log(element);
-    await sleep(30000);
+    // Transaction transmitted
+    await waitFor(element(by.text(/In Mempool/gi)))
+      .toExist()
+      .withTimeout(50000);
+
+    const tx = await element(by.text(/In Mempool/gi));
+
+    console.log('tx', await tx.getAttributes());
   });
 });
