@@ -194,9 +194,9 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
     }
   };
 
-  if (address) {
-    console.log('render History - 4', messagesSliced);
-  }
+  //if (address) {
+  //  console.log('render Messages - 4', messagesSliced);
+  //}
 
   return (
     <View
