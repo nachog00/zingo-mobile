@@ -81,7 +81,7 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
   const addressFilter = useMemo(
     () => (addr: string | undefined, memos: string[]) => {
       // if no memo -> ignore this VT.
-      const memoTotal = memos && memos.length > 0 ? memos.join('\n') : '';
+      const memoTotal = memos && memos.length > 0 && memos.join('') ? memos.join('\n') : '';
       if (!memoTotal) {
         return false;
       }
