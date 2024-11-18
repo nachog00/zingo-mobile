@@ -175,7 +175,7 @@ jobs:
         run: |
           cargo nextest run integration::${{ env.NEXTEST-ABI }} --verbose --profile ci \
             --archive-file nextest-archive-${{ env.ABI }}.tar.zst \
-            --partition count:${{ matrix.partition}}/5
+            --partition count:${{ matrix.partition}}/6
 
       - name: Upload test reports
         if: ${{ ! cancelled() }}
