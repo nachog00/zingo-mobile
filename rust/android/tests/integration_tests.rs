@@ -7,7 +7,7 @@ const UNIX_SOCKET: Option<&str> = Some("/var/run/docker.sock");
 
 // macos ci runner
 #[cfg(target_os = "macos")]
-const UNIX_SOCKET: Option<&str> = Some("`/Users/runner/.colima/default/docker.sock`");
+const UNIX_SOCKET: Option<&str> = Some("unix:///Users/runner/.colima/default/docker.sock");
 
 #[cfg(all(not(feature = "ci"), feature = "regchest", not(target_os = "macos")))]
 const UNIX_SOCKET: Option<&str> = None;
