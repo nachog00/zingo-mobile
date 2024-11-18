@@ -106,6 +106,9 @@ jobs:
           brew install --formula docker
           colima start
 
+      - name: Colima status
+        run: colima status
+
       - name: Pull regchest docker image
         run: docker pull zingodevops/regchest:008
 
