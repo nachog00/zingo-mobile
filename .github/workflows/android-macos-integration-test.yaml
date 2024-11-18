@@ -65,7 +65,7 @@ jobs:
     needs: android-build-test-artifacts
     strategy:
       matrix:
-        partition: [1, 2, 3, 4, 5]
+        partition: [1, 2, 3, 4, 5, 6]
     steps:
       - name: Set envs for zingolib CI
         if: ${{ contains(github.repository, 'zingolib') }}
@@ -173,7 +173,7 @@ jobs:
       - name: Run integration tests
         working-directory: ./rust
         run: |
-          cargo nextest run ${{ env.NEXTEST-ABI }} --verbose --profile ci \
+          cargo nextest run integration::${{ env.NEXTEST-ABI }} --verbose --profile ci \
             --archive-file nextest-archive-${{ env.ABI }}.tar.zst \
             --partition count:${{ matrix.partition}}/5
 
