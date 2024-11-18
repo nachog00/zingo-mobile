@@ -19,12 +19,21 @@ jobs:
   android-build:
     strategy:
       matrix:
-        arch: [x86_64, x86]
+        arch: [x86_64, x86, armeabi-v7a]
     uses: ./.github/workflows/android-build.yaml
     needs: create-cache-key
     with:
       cache-key: ${{ needs.create-cache-key.outputs.cache-key }}
       arch: ${{ matrix.arch }}
+
+  android-macos-integration-test:
+    uses: ./.github/workflows/android-macos-integration-test.yaml
+    needs: [ create-timestamp, create-cache-key, android-build ]
+    with:
+      timestamp: ${{ needs.create-timestamp.outputs.timestamp }}
+      cache-key: ${{ needs.create-cache-key.outputs.cache-key }}
+      abi: armeabi-v7a
+
 
   android-ubuntu-integration-test-ci:
     strategy:
