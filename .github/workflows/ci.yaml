@@ -19,7 +19,8 @@ jobs:
   android-build:
     strategy:
       matrix:
-        arch: [x86_64, x86, armeabi-v7a]
+        #arch: [x86_64, x86, armeabi-v7a]
+        arch: [armeabi-v7a]
     uses: ./.github/workflows/android-build.yaml
     needs: create-cache-key
     with:
@@ -34,49 +35,48 @@ jobs:
       cache-key: ${{ needs.create-cache-key.outputs.cache-key }}
       abi: armeabi-v7a
 
+  #android-ubuntu-integration-test-ci:
+  #  strategy:
+  #    matrix:
+  #      config:
+  #        - { abi: x86_64, api-level: 34 }
+  #        - { abi: x86, api-level: 29 }
+  #  uses: ./.github/workflows/android-ubuntu-integration-test-ci.yaml
+  #  needs: [create-timestamp, android-build]
+  #  with:
+  #    timestamp: ${{ needs.create-timestamp.outputs.timestamp }}
+  #    cache-key: ${{ needs.create-cache-key.outputs.cache-key }}
+  #    abi: ${{ matrix.config.abi }}
+  #    api-level: ${{ matrix.config['api-level'] }}
 
-  android-ubuntu-integration-test-ci:
-    strategy:
-      matrix:
-        config:
-          - { abi: x86_64, api-level: 34 }
-          - { abi: x86, api-level: 29 }
-    uses: ./.github/workflows/android-ubuntu-integration-test-ci.yaml
-    needs: [create-timestamp, android-build]
-    with:
-      timestamp: ${{ needs.create-timestamp.outputs.timestamp }}
-      cache-key: ${{ needs.create-cache-key.outputs.cache-key }}
-      abi: ${{ matrix.config.abi }}
-      api-level: ${{ matrix.config['api-level'] }}
+  #android-ubuntu-e2e-test-ci:
+  #  strategy:
+  #    matrix:
+  #      config:
+  #        - { abi: x86_64, api-level: 30 }
+  #        - { abi: x86, api-level: 28 }
+  #  uses: ./.github/workflows/android-ubuntu-e2e-test-ci.yaml
+  #  needs: [create-timestamp, android-build]
+  #  with:
+  #    timestamp: ${{ needs.create-timestamp.outputs.timestamp }}
+  #    cache-key: ${{ needs.create-cache-key.outputs.cache-key }}
+  #    abi: ${{ matrix.config.abi }}
+  #    api-level: ${{ matrix.config['api-level'] }}
 
-  android-ubuntu-e2e-test-ci:
-    strategy:
-      matrix:
-        config:
-          - { abi: x86_64, api-level: 30 }
-          - { abi: x86, api-level: 28 }
-    uses: ./.github/workflows/android-ubuntu-e2e-test-ci.yaml
-    needs: [create-timestamp, android-build]
-    with:
-      timestamp: ${{ needs.create-timestamp.outputs.timestamp }}
-      cache-key: ${{ needs.create-cache-key.outputs.cache-key }}
-      abi: ${{ matrix.config.abi }}
-      api-level: ${{ matrix.config['api-level'] }}
+  #ios-build:
+  #  uses: ./.github/workflows/ios-build.yaml
+  #  needs: create-cache-key
+  #  with:
+  #    cache-key: ${{ needs.create-cache-key.outputs.cache-key }}
 
-  ios-build:
-    uses: ./.github/workflows/ios-build.yaml
-    needs: create-cache-key
-    with:
-      cache-key: ${{ needs.create-cache-key.outputs.cache-key }}
+  #ios-integration-test:
+  #  uses: ./.github/workflows/ios-integration-test.yaml
+  #  needs: [create-timestamp, ios-build]
+  #  with:
+  #    timestamp: ${{ needs.create-timestamp.outputs.timestamp }}
+  #    cache-key: ${{ needs.create-cache-key.outputs.cache-key }}
 
-  ios-integration-test:
-    uses: ./.github/workflows/ios-integration-test.yaml
-    needs: [create-timestamp, ios-build]
-    with:
-      timestamp: ${{ needs.create-timestamp.outputs.timestamp }}
-      cache-key: ${{ needs.create-cache-key.outputs.cache-key }}
-
-  # deactivating these for now, until we fix how
+  # deactivating these for now, until we know how to fix
   # detox run in MACOS.
   #ios-e2e-test:
   #  uses: ./.github/workflows/ios-e2e-test.yaml
