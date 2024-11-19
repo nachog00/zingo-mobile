@@ -130,12 +130,19 @@ jobs:
           path: android/app/src/main/jniLibs/${{ env.ABI }}
           key: native-android-uniffi-${{ env.ABI }}-${{ env.CACHE-KEY }}
           fail-on-cache-miss: true
-      
+
+      - name: Kotlin uniffi cache
+        uses: actions/cache/restore@v4
+        with:
+          path: android/app/build/generated/source/uniffi/debug/java/uniffi/zingo
+          key: kotlin-android-uniffi-${{ env.ABI }}-${{ env.CACHE-KEY }}
+          fail-on-cache-miss: true
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '18'
+          java-version: '17'
       
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -146,7 +153,7 @@ jobs:
       - name: Gradle cache
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: 7.5
+          gradle-version: 8.2
           build-root-directory: ./android
           cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/dev' }}
       
