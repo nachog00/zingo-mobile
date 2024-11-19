@@ -796,7 +796,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       }
     }
     if (!isEqual(this.state.valueTransfers, valueTransfers)) {
-      console.log('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& fetch ValueTransfers');
+      //console.log('fetch ValueTransfers');
       // set somePending as well here when I know there is something new in ValueTransfers
       const pending: number =
         valueTransfers.length > 0 ? valueTransfers.filter((vt: ValueTransferType) => vt.confirmations === 0).length : 0;
@@ -908,7 +908,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
 
   setMessagesList = (messages: ValueTransferType[]) => {
     if (!isEqual(this.state.messages, messages)) {
-      console.log('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& fetch messages');
+      //console.log('fetch messages');
       this.setState({ messages });
     }
   };
