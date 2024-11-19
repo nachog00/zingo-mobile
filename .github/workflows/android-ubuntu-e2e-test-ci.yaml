@@ -68,9 +68,6 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Install QEMU arm
-        run: sudo apt install qemu-system-arm
-
       - name: JVM Heap Size
         run: export _JAVA_OPTIONS="-Xmx4g"
 
@@ -197,9 +194,6 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-
-      - name: Install QEMU arm
-        run: sudo apt install qemu-system-arm
 
       - name: Install protoc
         run: sudo apt install protobuf-compiler
