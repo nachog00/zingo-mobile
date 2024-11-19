@@ -210,6 +210,9 @@ if [ ! -d "./android/app" ]; then
     exit 1
 fi
 
+echo -e "\nYarn install directory removed..."
+rm -rf ./node_modules
+
 echo -e "\nRunning yarn install..."
 yarn global add node-gyp
 yarn install

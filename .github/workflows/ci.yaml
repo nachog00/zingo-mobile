@@ -43,7 +43,7 @@ jobs:
         config:
           - { abi: x86_64, api-level: 34, target: default }
           - { abi: x86, api-level: 29, target: default }
-          - { abi: arm64-v8a, api-level: 30, target: default }
+          - { abi: arm64-v8a, api-level: 30, target: google_apis_playstore }
     uses: ./.github/workflows/android-ubuntu-integration-test-ci.yaml
     needs: [create-timestamp, android-build]
     with:
@@ -59,7 +59,7 @@ jobs:
         config:
           - { abi: x86_64, api-level: 30, target: default }
           - { abi: x86, api-level: 28, target: default }
-          - { abi: arm64-v8a, api-level: 30, target: default }
+          - { abi: arm64-v8a, api-level: 30, target: google_apis_playstore }
     uses: ./.github/workflows/android-ubuntu-e2e-test-ci.yaml
     needs: [create-timestamp, android-build]
     with:
