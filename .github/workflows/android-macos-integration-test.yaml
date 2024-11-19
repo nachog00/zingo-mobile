@@ -64,6 +64,7 @@ jobs:
     runs-on: macos-13
     needs: android-build-test-artifacts
     strategy:
+      fail-fast: false
       matrix:
         partition: [1, 2, 3, 4, 5, 6]
     steps:
