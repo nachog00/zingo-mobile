@@ -83,11 +83,7 @@ const MessageList: React.FunctionComponent<MessageListProps> = ({
       if (!memos) {
         return false;
       }
-      // if no memo -> ignore this VT.
-      const memoTotal = memos && memos.length > 0 && memos.join('') ? memos.join('\n') : '';
-      if (!memoTotal) {
-        return false;
-      }
+      const memoTotal = memos.join('\n');
       let memoAddress;
       if (memoTotal.includes('\nReply to: \n')) {
         let memoArray = memoTotal.split('\nReply to: \n');
