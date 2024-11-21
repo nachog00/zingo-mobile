@@ -3,7 +3,7 @@ export type RPCSendProgressType = {
   sending: boolean;
   progress: number;
   total: number;
-  txid: string;
+  txids: string[];
   error: string;
   sync_interrupt: boolean;
 };

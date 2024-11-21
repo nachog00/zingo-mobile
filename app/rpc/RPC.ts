@@ -1441,7 +1441,7 @@ export default class RPC {
 
     // sometimes we need the result of send as well
     let sendError: string = '';
-    let sendTxid: string = '';
+    let sendTxids: string = '';
 
     // This is async, so fire and forget
     this.doSend(JSON.stringify(sendJson))
@@ -1451,7 +1451,7 @@ export default class RPC {
           if (rJson.error) {
             sendError = rJson.error;
           } else if (rJson.txids) {
-            sendTxid = rJson.txids.join(', ');
+            sendTxids = rJson.txids.join(', ');
           }
         } catch (e) {
           sendError = r;
@@ -1482,7 +1482,7 @@ export default class RPC {
       const intervalID = setInterval(async () => {
         const pro: string = await this.doSendProgress();
         console.log('send progress', pro);
-        if (pro && pro.toLowerCase().startsWith(GlobalConst.error) && !sendTxid && !sendError) {
+        if (pro && pro.toLowerCase().startsWith(GlobalConst.error) && !sendTxids && !sendError) {
           return;
         }
         let progress = {} as RPCSendProgressType;
@@ -1492,7 +1492,7 @@ export default class RPC {
           sendId = progress.id;
         } catch (e) {
           console.log('Error parsing status send progress', e);
-          if (!sendTxid && !sendError) {
+          if (!sendTxids && !sendError) {
             return;
           }
         }
@@ -1506,7 +1506,7 @@ export default class RPC {
         const updatedProgress = new SendProgressClass(0, 0, 0);
         // if the send command fails really fast then the sendID never change.
         // In this case I need to finish this promise right away.
-        if (sendId === prevSendId && !sendTxid && !sendError) {
+        if (sendId === prevSendId && !sendTxids && !sendError) {
           console.log('progress id', sendId);
           // Still not started, so wait for more time
           return;
@@ -1546,7 +1546,7 @@ export default class RPC {
         // sometimes the progress.sending is false and txid and error are null
         // in this moment I can use the values from the command send
 
-        if (!progress.txid && !progress.error && !sendTxid && !sendError) {
+        if (!progress.txids && !progress.error && !sendTxids && !sendError) {
           // Still processing
           setSendProgress(updatedProgress);
           return;
@@ -1556,15 +1556,14 @@ export default class RPC {
         clearInterval(intervalID);
         setSendProgress({} as SendProgressClass);
 
-        if (progress.txid) {
+        if (progress.txids) {
           // And refresh data (full refresh)
           this.refresh(true);
           // send process is about to finish - reactivate the syncing flag
           if (progress.sync_interrupt) {
             await RPC.rpcSetInterruptSyncAfterBatch(GlobalConst.false);
           }
-          // convert txid -> txids temporarely, I hope.
-          const progressTxids = progress.txid.replaceAll('created txid: ', '').split(' & ').join(', ');
+          const progressTxids = progress.txids.join(', ');
           resolve(progressTxids);
         }
 
@@ -1576,14 +1575,14 @@ export default class RPC {
           reject(progress.error);
         }
 
-        if (sendTxid) {
+        if (sendTxids) {
           // And refresh data (full refresh)
           this.refresh(true);
           // send process is about to finish - reactivate the syncing flag
           if (progress.sync_interrupt) {
             await RPC.rpcSetInterruptSyncAfterBatch(GlobalConst.false);
           }
-          resolve(sendTxid);
+          resolve(sendTxids);
         }
 
         if (sendError) {
