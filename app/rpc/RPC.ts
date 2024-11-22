@@ -1450,7 +1450,7 @@ export default class RPC {
           const rJson: RPCSendType = JSON.parse(r);
           if (rJson.error) {
             sendError = rJson.error;
-          } else if (rJson.txids) {
+          } else if (rJson.txids && rJson.txids.length > 0) {
             sendTxids = rJson.txids.join(', ');
           }
         } catch (e) {
@@ -1546,7 +1546,7 @@ export default class RPC {
         // sometimes the progress.sending is false and txid and error are null
         // in this moment I can use the values from the command send
 
-        if (!progress.txids && !progress.error && !sendTxids && !sendError) {
+        if ((!progress.txids || progress.txids.length === 0) && !progress.error && !sendTxids && !sendError) {
           // Still processing
           setSendProgress(updatedProgress);
           return;
@@ -1556,7 +1556,7 @@ export default class RPC {
         clearInterval(intervalID);
         setSendProgress({} as SendProgressClass);
 
-        if (progress.txids) {
+        if (progress.txids && progress.txids.length > 0) {
           // And refresh data (full refresh)
           this.refresh(true);
           // send process is about to finish - reactivate the syncing flag
