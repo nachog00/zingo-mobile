@@ -325,8 +325,8 @@ const Confirm: React.FunctionComponent<ConfirmProps> = ({
           <CurrencyAmount amtZec={sendingTotal} price={zecPrice.zecPrice} currency={currency} privacy={false} />
         </View>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <View style={{ marginHorizontal: 10 }}>
-            <FadeText style={{ marginTop: 10 }}>{translate('send.confirm-privacy-level') as string}</FadeText>
+          <View style={{ margin: 10 }}>
+            <FadeText>{translate('send.confirm-privacy-level') as string}</FadeText>
             <RegText>{privacyLevel}</RegText>
           </View>
           <View style={{ margin: 10 }}>
