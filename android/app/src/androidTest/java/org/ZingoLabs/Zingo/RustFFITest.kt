@@ -451,6 +451,12 @@ class ExecuteSaplingBalanceFromSeed {
         assertThat(balance.verified_sapling_balance).isEqualTo(100000)
         assertThat(balance.spendable_sapling_balance).isEqualTo(100000)
         assertThat(balance.transparent_balance).isEqualTo(0)
+
+        // change to Offline mode
+        val changeServerJson:String = uniffi.zingo.executeCommand("changeserver", "")
+        println("\nChange Server:")
+        println(changeServerJson)
+        assertThat(changeServerJson.lowercase()).doesNotStartWith("error")
     }
 }
 

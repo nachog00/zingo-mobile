@@ -78,7 +78,12 @@ type SendProps = {
   setShieldingAmount: (value: number) => void;
   setScrollToTop: (value: boolean) => void;
   setScrollToBottom: (value: boolean) => void;
-  setServerOption: (value: ServerType, toast: boolean, sameServerChainName: boolean) => Promise<void>;
+  setServerOption: (
+    value: ServerType,
+    selectServer: SelectServerEnum,
+    toast: boolean,
+    sameServerChainName: boolean,
+  ) => Promise<void>;
 };
 
 const Send: React.FunctionComponent<SendProps> = ({
@@ -788,7 +793,7 @@ const Send: React.FunctionComponent<SendProps> = ({
           console.log(serverChecked);
           console.log(fasterServer);
           if (fasterServer.uri !== server.uri) {
-            setServerOption(fasterServer, false, true);
+            setServerOption(fasterServer, selectServer, false, true);
             // first interrupt syncing Just in case...
             await RPC.rpcSetInterruptSyncAfterBatch(GlobalConst.true);
           }

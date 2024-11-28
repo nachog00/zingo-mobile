@@ -66,10 +66,11 @@ export default class SettingsFileImpl {
           }
         } else {
           if (!settings.server.uri || !settings.server.chainName) {
-            // if one or both field/s don't have valid value -> we assign the default server.
+            // if one or both field/s don't have valid value -> we assign offline mode.
+            // this is the most accurate decision since we have offline mode.
             settings.server = {
-              uri: serverUris(() => {})[0].uri,
-              chainName: serverUris(() => {})[0].chainName,
+              uri: '',
+              chainName: ChainNameEnum.mainChainName, // for now this is correct, in some future this have to be ''.
             } as ServerType;
           }
         }
@@ -101,13 +102,16 @@ export default class SettingsFileImpl {
       }
       if (!settings.hasOwnProperty(SettingsNameEnum.selectServer)) {
         // this is the first time the App have selection server
-        // here just exists 5 options:
+        // here just exists 6 options:
+        // - server empty -> offline
         // - lightwalletd (obsolete) -> auto
         // - zcash-infra (default) -> auto
         // - custom server -> mainnet (new - not default)
         // - custom server -> mainnet (not in the list)
         // - custom server -> testnet or regtest
-        if (
+        if (!settings.server.uri) {
+          settings.selectServer = SelectServerEnum.offline;
+        } else if (
           serverUris(() => {})
             .filter((s: ServerUrisType) => s.obsolete)
             .find((s: ServerUrisType) =>

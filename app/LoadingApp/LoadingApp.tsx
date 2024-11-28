@@ -252,7 +252,8 @@ export default function LoadingApp(props: LoadingAppProps) {
       if (
         settings.selectServer === SelectServerEnum.auto ||
         settings.selectServer === SelectServerEnum.custom ||
-        settings.selectServer === SelectServerEnum.list
+        settings.selectServer === SelectServerEnum.list ||
+        settings.selectServer === SelectServerEnum.offline
       ) {
         setSelectServer(settings.selectServer);
       } else {

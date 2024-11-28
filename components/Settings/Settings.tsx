@@ -42,7 +42,12 @@ import { hasRecoveryWalletInfo } from '../../app/recoveryWalletInfo';
 type SettingsProps = {
   closeModal: () => void;
   setWalletOption: (walletOption: string, value: string) => Promise<void>;
-  setServerOption: (value: ServerType, toast: boolean, sameServerChainName: boolean) => Promise<void>;
+  setServerOption: (
+    value: ServerType,
+    selectServer: SelectServerEnum,
+    toast: boolean,
+    sameServerChainName: boolean,
+  ) => Promise<void>;
   setCurrencyOption: (value: CurrencyEnum) => Promise<void>;
   setLanguageOption: (value: LanguageEnum, reset: boolean) => Promise<void>;
   setSendAllOption: (value: boolean) => Promise<void>;
@@ -159,9 +164,9 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
   const [autoServerChainName, setAutoServerChainName] = useState<string>('');
   const [listServerUri, setListServerUri] = useState<string>('');
   const [listServerChainName, setListServerChainName] = useState<string>('');
-  const [itemsPicker, setItemsPicker] = useState<{ label: string; value: string }[]>([]);
   const [customServerUri, setCustomServerUri] = useState<string>('');
   const [customServerChainName, setCustomServerChainName] = useState<string>('');
+  const [itemsPicker, setItemsPicker] = useState<{ label: string; value: string }[]>([]);
   const [currency, setCurrency] = useState<CurrencyEnum>(currencyContext);
   const [language, setLanguage] = useState<LanguageEnum>(languageContext);
   const [sendAll, setSendAll] = useState<boolean>(sendAllContext);
@@ -185,9 +190,10 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
     recoveryWalletInfoOnDeviceContext,
   );
 
-  const [customIcon, setCustomIcon] = useState<IconDefinition>(farCircle);
   const [autoIcon, setAutoIcon] = useState<IconDefinition>(farCircle);
   const [listIcon, setListIcon] = useState<IconDefinition>(farCircle);
+  const [customIcon, setCustomIcon] = useState<IconDefinition>(farCircle);
+  const [offlineIcon, setOfflineIcon] = useState<IconDefinition>(farCircle);
   const [disabled, setDisabled] = useState<boolean>();
   const [titleViewHeight, setTitleViewHeight] = useState<number>(0);
   const [hasRecoveryWalletInfoSaved, setHasRecoveryWalletInfoSaved] = useState<boolean>(false);
@@ -221,6 +227,12 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
       setCustomIcon(faDotCircle);
       setCustomServerUri(serverContext.uri);
       setCustomServerChainName(serverContext.chainName);
+      // I have to update them in auto as well
+      // with the first of the list
+      setAutoServerUri(serverUris(translate)[0].uri);
+      setAutoServerChainName(serverUris(translate)[0].chainName);
+    } else if (selectServerContext === SelectServerEnum.offline) {
+      setOfflineIcon(faDotCircle);
       // I have to update them in auto as well
       // with the first of the list
       setAutoServerUri(serverUris(translate)[0].uri);
@@ -280,6 +292,9 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
     } else if (selectServer === SelectServerEnum.custom) {
       serverUriParsed = customServerUri;
       chainNameParsed = customServerChainName;
+    } else if (selectServer === SelectServerEnum.offline) {
+      serverUriParsed = '';
+      chainNameParsed = ChainNameEnum.mainChainName;
     }
     let sameServerChainName = true;
     const chainName = serverContext.chainName;
@@ -310,7 +325,7 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
       addLastSnackbar({ message: translate('settings.isthreshold') as string });
       return;
     }
-    if (!serverUriParsed || !chainNameParsed) {
+    if ((!serverUriParsed || !chainNameParsed) && selectServer !== SelectServerEnum.offline) {
       addLastSnackbar({ message: translate('settings.isserver') as string });
       return;
     }
@@ -319,7 +334,7 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
       return;
     }
 
-    if (serverContext.uri !== serverUriParsed) {
+    if (serverContext.uri !== serverUriParsed && selectServer !== SelectServerEnum.offline) {
       const resultUri = parseServerURI(serverUriParsed, translate);
       if (resultUri.toLowerCase().startsWith(GlobalConst.error)) {
         addLastSnackbar({ message: translate('settings.isuri') as string });
@@ -338,6 +353,8 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
             setListServerUri(serverUriParsed);
           } else if (selectServer === SelectServerEnum.custom) {
             setCustomServerUri(serverUriParsed);
+          } else if (selectServer === SelectServerEnum.offline) {
+            setCustomServerUri('');
           }
         }
       }
@@ -348,7 +365,10 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
       return;
     }
 
-    if (serverContext.uri !== serverUriParsed || serverContext.chainName !== chainNameParsed) {
+    if (
+      (serverContext.uri !== serverUriParsed || serverContext.chainName !== chainNameParsed) &&
+      selectServer !== SelectServerEnum.offline
+    ) {
       setDisabled(true);
       addLastSnackbar({ message: translate('loadedapp.tryingnewserver') as string });
       const { result, timeout, newChainName } = await checkServerURI(serverUriParsed, serverContext.uri);
@@ -363,7 +383,7 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
         }
         // in this point the sync process is blocked, who knows why.
         // if I save the actual server before the customization... is going to work.
-        setServerOption(serverContext, false, sameServerChainName);
+        setServerOption(serverContext, selectServerContext, false, sameServerChainName);
         setDisabled(false);
         return;
       } else {
@@ -398,9 +418,6 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
     if (!isEqual(securityContext, securityObject())) {
       await setSecurityOption(securityObject());
     }
-    if (selectServerContext !== selectServer) {
-      await setSelectServerOption(selectServer);
-    }
     if (rescanMenuContext !== rescanMenu) {
       await setRescanMenuOption(rescanMenu);
     }
@@ -414,9 +431,17 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
       if (languageContext !== language) {
         await setLanguageOption(language, false);
       }
-      setServerOption({ uri: serverUriParsed, chainName: chainNameParsed } as ServerType, true, sameServerChainName);
+      setServerOption(
+        { uri: serverUriParsed, chainName: chainNameParsed } as ServerType,
+        selectServer,
+        true,
+        sameServerChainName,
+      );
       ms = 1500;
     } else {
+      if (selectServerContext !== selectServer) {
+        await setSelectServerOption(selectServer);
+      }
       if (languageContext !== language) {
         await setLanguageOption(language, true);
       }
@@ -640,10 +665,34 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
             <View style={{ display: 'flex', marginLeft: 25 }}>
               <View>
                 <TouchableOpacity
+                  testID="settings.offline-server"
+                  disabled={disabled}
+                  style={{ marginRight: 10, marginBottom: 0, maxHeight: 50, minHeight: 48 }}
+                  onPress={() => {
+                    setOfflineIcon(faDotCircle);
+                    setAutoIcon(farCircle);
+                    setListIcon(farCircle);
+                    setCustomIcon(farCircle);
+                    setSelectServer(SelectServerEnum.offline);
+                  }}>
+                  <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
+                    {offlineIcon && <FontAwesomeIcon icon={offlineIcon} size={20} color={colors.border} />}
+                    <RegText style={{ marginLeft: 10 }}>{translate('settings.server-offline') as string}</RegText>
+                    {offlineIcon === faDotCircle && <FadeText style={{ marginLeft: 10 }}>{''}</FadeText>}
+                  </View>
+                </TouchableOpacity>
+              </View>
+              <View style={{ display: 'flex' }}>
+                <FadeText>{translate('settings.server-offline-text') as string}</FadeText>
+              </View>
+
+              <View>
+                <TouchableOpacity
                   testID="settings.auto-server"
                   disabled={disabled}
                   style={{ marginRight: 10, marginBottom: 0, maxHeight: 50, minHeight: 48 }}
                   onPress={() => {
+                    setOfflineIcon(farCircle);
                     setAutoIcon(faDotCircle);
                     setListIcon(farCircle);
                     setCustomIcon(farCircle);
@@ -675,6 +724,7 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
                     onValueChange={(itemValue: string) => {
                       //console.log(JSON.stringify(item));
                       if (itemValue) {
+                        setOfflineIcon(farCircle);
                         setAutoIcon(farCircle);
                         setListIcon(faDotCircle);
                         setCustomIcon(farCircle);

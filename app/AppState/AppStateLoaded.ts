@@ -2,6 +2,7 @@ import ServerType from './types/ServerType';
 
 import { MenuItemEnum } from './enums/MenuItemEnum';
 import { AppStateStatus } from 'react-native';
+import { SelectServerEnum } from './enums/SelectServerEnum';
 
 export default interface AppStateLoaded {
   appStateStatus: AppStateStatus;
@@ -31,6 +32,7 @@ export default interface AppStateLoaded {
 
   // change server helper
   newServer: ServerType;
+  newSelectServer: SelectServerEnum | null;
 
   // to do scroll to top in history
   scrollToTop: boolean;

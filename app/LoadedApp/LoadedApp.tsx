@@ -247,7 +247,8 @@ export default function LoadedApp(props: LoadedAppProps) {
       if (
         settings.selectServer === SelectServerEnum.auto ||
         settings.selectServer === SelectServerEnum.custom ||
-        settings.selectServer === SelectServerEnum.list
+        settings.selectServer === SelectServerEnum.list ||
+        settings.selectServer === SelectServerEnum.offline
       ) {
         setSelectServer(settings.selectServer);
       } else {
@@ -443,6 +444,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       insightModalVisible: false,
       addressBookModalVisible: false,
       newServer: {} as ServerType,
+      newSelectServer: null,
       somePending: false,
       scrollToTop: false,
       scrollToBottom: false,
@@ -1167,7 +1169,12 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
     this.rpc.fetchWalletSettings();
   };
 
-  setServerOption = async (value: ServerType, toast: boolean, sameServerChainName: boolean): Promise<void> => {
+  setServerOption = async (
+    value: ServerType,
+    selectServer: SelectServerEnum,
+    toast: boolean,
+    sameServerChainName: boolean,
+  ): Promise<void> => {
     // here I know the server was changed, clean all the tasks before anything.
     await this.rpc.clearTimers();
     this.setSyncingStatus(new SyncingStatusClass());
@@ -1185,7 +1192,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       // - the seed exists and the App can open the wallet in the new server.
       //   But I have to restart the sync if needed.
       let result: string = await RPCModule.loadExistingWallet(value.uri, value.chainName);
-      //console.log(result);
+      console.log('load existing wallet', result);
       if (result && !result.toLowerCase().startsWith(GlobalConst.error)) {
         try {
           // here result can have an `error` field for watch-only which is actually OK.
@@ -1202,8 +1209,10 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
               });
             }
             await SettingsFileImpl.writeSettings(SettingsNameEnum.server, value);
+            await SettingsFileImpl.writeSettings(SettingsNameEnum.selectServer, selectServer);
             this.setState({
               server: value,
+              selectServer: selectServer,
             });
             // the server is changed, the App needs to restart the timeout tasks from the beginning
             await this.rpc.configure();
@@ -1248,7 +1257,9 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       this.fetchWallet();
       this.setState({
         newServer: value as ServerType,
+        newSelectServer: selectServer,
         server: oldSettings.server,
+        selectServer: oldSettings.selectServer,
       });
     }
   };
@@ -1443,7 +1454,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
   };
 
   onClickOKServerWallet = async () => {
-    if (this.state.newServer) {
+    if (this.state.newServer && this.state.newSelectServer) {
       const beforeServer = this.state.server;
       const resultStr: string = await RPCModule.execute(CommandEnum.changeserver, this.state.newServer.uri);
       if (resultStr.toLowerCase().startsWith(GlobalConst.error)) {
@@ -1457,9 +1468,12 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       }
 
       await SettingsFileImpl.writeSettings(SettingsNameEnum.server, this.state.newServer);
+      await SettingsFileImpl.writeSettings(SettingsNameEnum.selectServer, this.state.newSelectServer);
       this.setState({
         server: this.state.newServer,
+        selectServer: this.state.newSelectServer,
         newServer: {} as ServerType,
+        newSelectServer: null,
       });
 
       await this.rpc.fetchInfoAndServerHeight();
@@ -1677,7 +1691,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       );
     };
 
-    //console.log('render LoadedAppClass - 3', this.state.netInfo);
+    console.log('render LoadedAppClass - 3', this.state.selectServer, this.state.server);
     //console.log('vt', valueTransfers);
     //console.log('ad', addresses);
     //console.log('ba', totalBalance);
