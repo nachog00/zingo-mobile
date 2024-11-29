@@ -456,7 +456,7 @@ class ExecuteSaplingBalanceFromSeed {
         val changeServerJson:String = uniffi.zingo.executeCommand("changeserver", "")
         println("\nChange Server:")
         println(changeServerJson)
-        assertThat(changeServerJson.lowercase()).doesNotStartWith("error")
+        assertThat(changeServerJson.lowercase().StartsWith("error")).isFalse()
     }
 }
 
