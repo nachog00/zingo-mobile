@@ -456,6 +456,9 @@ class ExecuteSaplingBalanceFromSeed {
         assertThat(balance.spendable_sapling_balance).isEqualTo(100000)
         assertThat(balance.transparent_balance).isEqualTo(0)
 
+        // save the wallet file
+        rpcModule.saveWalletFile()
+
         // change to Offline mode
         val changeServerJson:String = uniffi.zingo.executeCommand("changeserver", "")
         println("\nChange Server:")
