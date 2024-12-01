@@ -47,6 +47,7 @@ type ValueTransferLineProps = {
   nextLineWithSameTxid: boolean;
   setSendPageState: (s: SendPageStateClass) => void;
   setMessagesAddressModalShowing: (b: boolean) => void;
+  addressProtected?: boolean;
 };
 const ValueTransferLine: React.FunctionComponent<ValueTransferLineProps> = ({
   index,
@@ -58,6 +59,7 @@ const ValueTransferLine: React.FunctionComponent<ValueTransferLineProps> = ({
   nextLineWithSameTxid,
   setSendPageState,
   setMessagesAddressModalShowing,
+  addressProtected,
 }) => {
   const context = useContext(ContextAppLoaded);
   const { translate, language, privacy, info, navigation, showSwipeableIcons, readOnly, selectServer } = context;
@@ -195,7 +197,7 @@ const ValueTransferLine: React.FunctionComponent<ValueTransferLineProps> = ({
                 <FontAwesomeIcon style={{ opacity: 0.8 }} size={25} icon={faFileLines} color={colors.money} />
               </TouchableOpacity>
             </View>
-            {!!vt.address && !readOnly && selectServer !== SelectServerEnum.offline && (
+            {!!vt.address && !readOnly && selectServer !== SelectServerEnum.offline && !addressProtected && (
               <View
                 style={{
                   width: 50,

@@ -64,7 +64,7 @@ const History: React.FunctionComponent<HistoryProps> = ({
   scrollToBottom,
 }) => {
   const context = useContext(ContextAppLoaded);
-  const { translate, valueTransfers, language, setBackgroundError, addLastSnackbar } = context;
+  const { translate, valueTransfers, language, setBackgroundError, addLastSnackbar, server } = context;
   const { colors } = useTheme() as unknown as ThemeType;
   moment.locale(language);
 
@@ -77,6 +77,7 @@ const History: React.FunctionComponent<HistoryProps> = ({
   const [valueTransfersSliced, setValueTransfersSliced] = useState<ValueTransferType[]>([]);
   const [isAtTop, setIsAtTop] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
+  const [zennyTips, setZennyTips] = useState<string>('');
   const scrollViewRef = useRef<ScrollView>(null);
 
   useScrollToTop(scrollViewRef);
@@ -91,7 +92,13 @@ const History: React.FunctionComponent<HistoryProps> = ({
   }, [valueTransfers, numVt]);
 
   useEffect(() => {
+    const fetchZennyTips = async () => {
+      const zt: string = await Utils.getZenniesDonationAddress(server.chainName);
+      setZennyTips(zt);
+    };
+
     if (valueTransfers !== null) {
+      fetchZennyTips();
       setLoadMoreButton(numVt < (valueTransfers ? valueTransfers.length : 0));
       const vts = fetchValueTransfersSliced;
       setValueTransfersSliced(vts);
@@ -99,7 +106,7 @@ const History: React.FunctionComponent<HistoryProps> = ({
         setLoading(false);
       }, 500);
     }
-  }, [fetchValueTransfersSliced, numVt, valueTransfers]);
+  }, [fetchValueTransfersSliced, numVt, valueTransfers, server.chainName]);
 
   useEffect(() => {
     if (scrollToTop) {
@@ -251,6 +258,7 @@ const History: React.FunctionComponent<HistoryProps> = ({
                     }
                     setSendPageState={setSendPageState}
                     setMessagesAddressModalShowing={(bbb: boolean) => setMessagesAddressModalShowing(bbb)}
+                    addressProtected={vt.address === zennyTips}
                   />
                 );
               })}
