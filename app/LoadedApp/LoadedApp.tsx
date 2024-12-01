@@ -1607,6 +1607,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       scrollToBottom,
       addresses,
       somePending,
+      selectServer,
     } = this.state;
     const { colors } = this.props.theme;
 
@@ -1994,6 +1995,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
                 )}
               </Tab.Screen>
               {!readOnly &&
+                selectServer !== SelectServerEnum.offline &&
                 (mode === ModeEnum.advanced ||
                   (!!totalBalance && totalBalance.spendableOrchard + totalBalance.spendablePrivate > 0) ||
                   (!!totalBalance &&

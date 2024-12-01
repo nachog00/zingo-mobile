@@ -278,7 +278,7 @@
     "server-auto": "Automático",
     "server-list": "Lista",
     "server-custom": "Personalizado",
-    "server-offline": "Offline",
+    "server-offline": "Sin conexión",
     "server-auto-text": "La próxima vez que la aplicación se inicie, calculará cuál es el mejor servidor de la lista y lo hará activo.",
     "server-list-text": "Selecciona un servidor de la lista.",
     "server-custom-text": "Rellena la informacion del servidor que quieres usar.",

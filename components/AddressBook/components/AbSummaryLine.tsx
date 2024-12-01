@@ -13,6 +13,7 @@ import {
   ToAddrClass,
   ModeEnum,
   RouteEnums,
+  SelectServerEnum,
 } from '../../../app/AppState';
 import Utils from '../../../app/utils';
 import { ThemeType } from '../../../app/types';
@@ -45,7 +46,7 @@ const AbSummaryLine: React.FunctionComponent<AbSummaryLineProps> = ({
   addressProtected,
 }) => {
   const context = useContext(ContextAppLoaded);
-  const { translate, navigation, readOnly, mode, totalBalance, language } = context;
+  const { translate, navigation, readOnly, mode, totalBalance, language, selectServer } = context;
   const { colors } = useTheme() as unknown as ThemeType;
   moment.locale(language);
 
@@ -134,6 +135,7 @@ const AbSummaryLine: React.FunctionComponent<AbSummaryLineProps> = ({
           </View>
         )}
         {!readOnly &&
+          selectServer !== SelectServerEnum.offline &&
           !addressProtected &&
           !(
             mode === ModeEnum.basic &&

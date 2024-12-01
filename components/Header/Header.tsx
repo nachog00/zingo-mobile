@@ -27,6 +27,7 @@ import {
   ButtonTypeEnum,
   GlobalConst,
   CommandEnum,
+  SelectServerEnum,
 } from '../../app/AppState';
 import { ContextAppLoaded } from '../../app/context';
 import { ThemeType } from '../../app/types';
@@ -116,6 +117,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
     language,
     shieldingAmount,
     navigation,
+    selectServer,
   } = context;
 
   let translate: (key: string) => TranslateType, netInfo: NetInfoType, mode: ModeEnum.basic | ModeEnum.advanced;
@@ -195,7 +197,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
       }
     };
 
-    if (!readOnly && setShieldingAmount) {
+    if (!readOnly && setShieldingAmount && selectServer !== SelectServerEnum.offline) {
       (async () => {
         let proposeFee = 0;
         let proposeAmount = 0;
@@ -233,11 +235,13 @@ const Header: React.FunctionComponent<HeaderProps> = ({
         //console.log(proposeFee, proposeAmount);
       })();
     }
-  }, [readOnly, setShieldingAmount, totalBalance?.transparentBal, somePending]);
+  }, [readOnly, setShieldingAmount, totalBalance?.transparentBal, somePending, selectServer]);
 
   useEffect(() => {
-    setShowShieldButton(!readOnly && (somePending ? 0 : shieldingAmount) > 0);
-  }, [readOnly, shieldingAmount, somePending]);
+    setShowShieldButton(
+      !readOnly && selectServer !== SelectServerEnum.offline && (somePending ? 0 : shieldingAmount) > 0,
+    );
+  }, [readOnly, shieldingAmount, somePending, selectServer]);
 
   const shieldFunds = async () => {
     if (!setComputingModalVisible || !setBackgroundError || !addLastSnackbar) {
@@ -462,7 +466,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
           marginHorizontal: 5,
           height: 40,
         }}>
-        {!noSyncingStatus && (
+        {!noSyncingStatus && selectServer !== SelectServerEnum.offline && (
           <>
             {netInfo.isConnected && !!syncingStatus.lastBlockServer && syncingStatus.syncID >= 0 ? (
               <>
@@ -582,6 +586,29 @@ const Header: React.FunctionComponent<HeaderProps> = ({
               </>
             )}
           </>
+        )}
+        {selectServer === SelectServerEnum.offline && (
+          <View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: 0,
+              marginRight: 5,
+              paddingHorizontal: 5,
+              paddingVertical: 1,
+              borderColor: colors.zingo,
+              borderWidth: 1,
+              borderRadius: 10,
+              minWidth: 25,
+              minHeight: 25,
+            }}>
+            <Animated.View style={{ flexDirection: 'row', opacity: opacityValue, margin: 0, padding: 0 }}>
+              <FontAwesomeIcon icon={faWifi} color={'red'} size={18} />
+              <FadeText style={{ marginLeft: 10, marginRight: 5 }}>
+                {translate('settings.server-offline') as string}
+              </FadeText>
+            </Animated.View>
+          </View>
         )}
         {mode !== ModeEnum.basic &&
           !noPrivacy &&
