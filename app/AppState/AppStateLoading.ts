@@ -10,6 +10,7 @@ export default interface AppStateLoading {
   customServerShow: boolean;
   customServerUri: string;
   customServerChainName: ChainNameEnum;
+  customServerOffline: boolean;
   biometricsFailed: boolean;
   startingApp: boolean;
   serverErrorTries: number;

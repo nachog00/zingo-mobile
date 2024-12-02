@@ -18,7 +18,7 @@ import moment from 'moment';
 import 'moment/locale/es';
 import 'moment/locale/pt';
 import 'moment/locale/ru';
-import { ButtonTypeEnum, GlobalConst } from '../../app/AppState';
+import { ButtonTypeEnum, GlobalConst, SelectServerEnum } from '../../app/AppState';
 
 type ImportUfvkProps = {
   onClickCancel: () => void;
@@ -26,7 +26,7 @@ type ImportUfvkProps = {
 };
 const ImportUfvk: React.FunctionComponent<ImportUfvkProps> = ({ onClickCancel, onClickOK }) => {
   const context = useContext(ContextAppLoading);
-  const { translate, netInfo, info, server, mode, addLastSnackbar, language } = context;
+  const { translate, netInfo, info, server, mode, addLastSnackbar, language, selectServer } = context;
   const { colors } = useTheme() as unknown as ThemeType;
   moment.locale(language);
 
@@ -57,17 +57,19 @@ const ImportUfvk: React.FunctionComponent<ImportUfvkProps> = ({ onClickCancel, o
     if (info.latestBlock) {
       setLatestBlock(info.latestBlock);
     } else {
-      (async () => {
-        const resp: string = await RPCModule.getLatestBlock(server.uri);
-        //console.log(resp);
-        if (resp && !resp.toLowerCase().startsWith(GlobalConst.error)) {
-          setLatestBlock(Number(resp));
-        } else {
-          //console.log('error latest block', resp);
-        }
-      })();
+      if (selectServer !== SelectServerEnum.offline) {
+        (async () => {
+          const resp: string = await RPCModule.getLatestBlock(server.uri);
+          //console.log(resp);
+          if (resp && !resp.toLowerCase().startsWith(GlobalConst.error)) {
+            setLatestBlock(Number(resp));
+          } else {
+            //console.log('error latest block', resp);
+          }
+        })();
+      }
     }
-  }, [info.latestBlock, latestBlock, server]);
+  }, [info.latestBlock, server, selectServer]);
 
   useEffect(() => {
     if (seedufvkText) {
@@ -258,10 +260,11 @@ const ImportUfvk: React.FunctionComponent<ImportUfvkProps> = ({ onClickCancel, o
 
         <View style={{ marginTop: 10, alignItems: 'center' }}>
           <FadeText>{translate('import.birthday') as string}</FadeText>
-          <FadeText style={{ textAlign: 'center' }}>
-            {translate('seed.birthday-no-readonly') + ' (1, ' + (latestBlock ? latestBlock.toString() : '--') + ')'}
-          </FadeText>
-
+          {selectServer !== SelectServerEnum.offline && (
+            <FadeText style={{ textAlign: 'center' }}>
+              {translate('seed.birthday-no-readonly') + ' (1, ' + (latestBlock ? latestBlock.toString() : '--') + ')'}
+            </FadeText>
+          )}
           <View
             accessible={true}
             accessibilityLabel={translate('import.birthday-acc') as string}
@@ -293,13 +296,16 @@ const ImportUfvk: React.FunctionComponent<ImportUfvkProps> = ({ onClickCancel, o
               onChangeText={(text: string) => {
                 if (isNaN(Number(text))) {
                   setBirthday('');
-                } else if (Number(text) <= 0 || Number(text) > latestBlock) {
+                } else if (
+                  Number(text) <= 0 ||
+                  (Number(text) > latestBlock && selectServer !== SelectServerEnum.offline)
+                ) {
                   setBirthday('');
                 } else {
                   setBirthday(Number(text.replace('.', '').replace(',', '')).toFixed(0));
                 }
               }}
-              editable={latestBlock ? true : false}
+              editable={latestBlock ? true : selectServer !== SelectServerEnum.offline ? false : true}
               keyboardType="numeric"
             />
           </View>

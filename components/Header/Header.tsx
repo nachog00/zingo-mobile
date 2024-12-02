@@ -567,11 +567,9 @@ const Header: React.FunctionComponent<HeaderProps> = ({
                       minWidth: 25,
                       minHeight: 25,
                     }}>
-                    <Animated.View style={{ opacity: opacityValue, margin: 0, padding: 0 }}>
-                      <TouchableOpacity onPress={() => syncingStatusMoreInfoOnClick && syncingStatusMoreInfoOnClick()}>
-                        <FontAwesomeIcon icon={faWifi} color={colors.primaryDisabled} size={18} />
-                      </TouchableOpacity>
-                    </Animated.View>
+                    <TouchableOpacity onPress={() => syncingStatusMoreInfoOnClick && syncingStatusMoreInfoOnClick()}>
+                      <FontAwesomeIcon icon={faWifi} color={colors.primaryDisabled} size={18} />
+                    </TouchableOpacity>
                   </View>
                 )}
               </>
@@ -579,9 +577,23 @@ const Header: React.FunctionComponent<HeaderProps> = ({
             {(!netInfo.isConnected || netInfo.type === NetInfoStateType.cellular || netInfo.isConnectionExpensive) && (
               <>
                 {mode !== ModeEnum.basic && (
-                  <TouchableOpacity onPress={() => syncingStatusMoreInfoOnClick && syncingStatusMoreInfoOnClick()}>
-                    <FontAwesomeIcon icon={faCloudDownload} color={!netInfo.isConnected ? 'red' : 'yellow'} size={20} />
-                  </TouchableOpacity>
+                  <View
+                    style={{
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: 0,
+                      marginRight: 5,
+                      minWidth: 25,
+                      minHeight: 25,
+                    }}>
+                    <TouchableOpacity onPress={() => syncingStatusMoreInfoOnClick && syncingStatusMoreInfoOnClick()}>
+                      <FontAwesomeIcon
+                        icon={faCloudDownload}
+                        color={!netInfo.isConnected ? 'red' : 'yellow'}
+                        size={20}
+                      />
+                    </TouchableOpacity>
+                  </View>
                 )}
               </>
             )}
@@ -602,12 +614,12 @@ const Header: React.FunctionComponent<HeaderProps> = ({
               minWidth: 25,
               minHeight: 25,
             }}>
-            <Animated.View style={{ flexDirection: 'row', opacity: opacityValue, margin: 0, padding: 0 }}>
+            <View style={{ flexDirection: 'row', margin: 0, padding: 0 }}>
               <FontAwesomeIcon icon={faWifi} color={'red'} size={18} />
               <FadeText style={{ marginLeft: 10, marginRight: 5 }}>
                 {translate('settings.server-offline') as string}
               </FadeText>
-            </Animated.View>
+            </View>
           </View>
         )}
         {mode !== ModeEnum.basic &&

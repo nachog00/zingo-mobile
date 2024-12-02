@@ -14,6 +14,7 @@ import {
   NativeEventSubscription,
   TextInput,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
 import { useTheme } from '@react-navigation/native';
@@ -25,7 +26,7 @@ import NetInfo, { NetInfoStateType, NetInfoSubscription } from '@react-native-co
 import OptionsMenu from 'react-native-option-menu';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
+import { faEllipsisV, faWifi } from '@fortawesome/free-solid-svg-icons';
 
 import RPCModule from '../RPCModule';
 import {
@@ -90,6 +91,7 @@ import ImportUfvk from '../../components/Ufvk/ImportUfvk';
 import ChainTypeToggle from '../../components/Components/ChainTypeToggle';
 import { sendEmail } from '../sendEmail';
 import { RPCWalletKindEnum } from '../rpc/enums/RPCWalletKindEnum';
+import FadeText from '../../components/Components/FadeText';
 
 const en = require('../translations/en.json');
 const es = require('../translations/es.json');
@@ -390,6 +392,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
       customServerShow: false,
       customServerUri: '',
       customServerChainName: ChainNameEnum.mainChainName,
+      customServerOffline: false,
       biometricsFailed:
         !!props.route.params &&
         (props.route.params.biometricsFailed === true || props.route.params.biometricsFailed === false)
@@ -507,11 +510,12 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
       const networkState = await NetInfo.fetch();
       if (networkState.isConnected) {
         let result: string = await RPCModule.loadExistingWallet(this.state.server.uri, this.state.server.chainName);
+        //let result = 'Error: pepe es guapo';
 
         // for testing
         //await delay(5000);
 
-        //console.log('Load Wallet Exists result', result);
+        console.log('Load Wallet Exists result', result);
         let error = false;
         let errorText = '';
         if (result && !result.toLowerCase().startsWith(GlobalConst.error)) {
@@ -780,15 +784,13 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
   walletErrorHandle = async (result: string, title: string, screen: number, start: boolean) => {
     // first check the actual server
     // if the server is not working properly sometimes can take more than one minute to fail.
-    if (start) {
+    if (start && this.state.selectServer !== SelectServerEnum.offline) {
       this.addLastSnackbar({
         message: this.state.translate('restarting') as string,
         duration: SnackbarDurationEnum.long,
       });
     }
-    const workingServer = await this.checkServer(this.state.server);
-    if (workingServer) {
-      // the server is working -> this error is something not related with the server availability
+    if (this.state.selectServer === SelectServerEnum.offline) {
       createAlert(
         this.setBackgroundError,
         this.addLastSnackbar,
@@ -801,25 +803,72 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
       );
       this.setState({ actionButtonsDisabled: false, serverErrorTries: 0, screen });
     } else {
-      // let's change to another server
-      if (this.state.serverErrorTries === 0) {
-        // first try
-        this.setState({ screen, actionButtonsDisabled: true });
-        this.addLastSnackbar({
-          message: this.state.translate('loadingapp.serverfirsttry') as string,
-          duration: SnackbarDurationEnum.longer,
-        });
-        // a different server.
-        const someServerIsWorking = await this.selectTheBestServer(true);
-        if (someServerIsWorking) {
-          if (start) {
-            this.setState({
-              startingApp: false,
-              serverErrorTries: 1,
-              screen,
-            });
-            this.componentDidMount();
+      const workingServer = await this.checkServer(this.state.server);
+      if (workingServer) {
+        // the server is working -> this error is something not related with the server availability
+        createAlert(
+          this.setBackgroundError,
+          this.addLastSnackbar,
+          title,
+          result,
+          false,
+          this.state.translate,
+          sendEmail,
+          this.state.info.zingolib,
+        );
+        this.setState({ actionButtonsDisabled: false, serverErrorTries: 0, screen });
+      } else {
+        // let's change to another server
+        if (this.state.serverErrorTries === 0) {
+          // first try
+          this.setState({ screen, actionButtonsDisabled: true });
+          this.addLastSnackbar({
+            message: this.state.translate('loadingapp.serverfirsttry') as string,
+            duration: SnackbarDurationEnum.longer,
+          });
+          // a different server.
+          const someServerIsWorking = await this.selectTheBestServer(true);
+          if (someServerIsWorking) {
+            if (start) {
+              this.setState({
+                startingApp: false,
+                serverErrorTries: 1,
+                screen,
+              });
+              this.componentDidMount();
+            } else {
+              createAlert(
+                this.setBackgroundError,
+                this.addLastSnackbar,
+                title,
+                result,
+                false,
+                this.state.translate,
+                sendEmail,
+                this.state.info.zingolib,
+              );
+              this.setState({ actionButtonsDisabled: false, serverErrorTries: 0, screen });
+            }
           } else {
+            createAlert(
+              this.setBackgroundError,
+              this.addLastSnackbar,
+              title,
+              this.state.translate('loadingapp.noservers') as string,
+              false,
+              this.state.translate,
+              sendEmail,
+              this.state.info.zingolib,
+            );
+            this.setState({ actionButtonsDisabled: false, serverErrorTries: 0, screen });
+          }
+        } else {
+          // second try
+          this.addLastSnackbar({
+            message: this.state.translate('loadingapp.serversecondtry') as string,
+            duration: SnackbarDurationEnum.longer,
+          });
+          setTimeout(() => {
             createAlert(
               this.setBackgroundError,
               this.addLastSnackbar,
@@ -831,39 +880,8 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
               this.state.info.zingolib,
             );
             this.setState({ actionButtonsDisabled: false, serverErrorTries: 0, screen });
-          }
-        } else {
-          createAlert(
-            this.setBackgroundError,
-            this.addLastSnackbar,
-            title,
-            this.state.translate('loadingapp.noservers') as string,
-            false,
-            this.state.translate,
-            sendEmail,
-            this.state.info.zingolib,
-          );
-          this.setState({ actionButtonsDisabled: false, serverErrorTries: 0, screen });
+          }, 1000);
         }
-      } else {
-        // second try
-        this.addLastSnackbar({
-          message: this.state.translate('loadingapp.serversecondtry') as string,
-          duration: SnackbarDurationEnum.longer,
-        });
-        setTimeout(() => {
-          createAlert(
-            this.setBackgroundError,
-            this.addLastSnackbar,
-            title,
-            result,
-            false,
-            this.state.translate,
-            sendEmail,
-            this.state.info.zingolib,
-          );
-          this.setState({ actionButtonsDisabled: false, serverErrorTries: 0, screen });
-        }, 1000);
       }
     }
   };
@@ -876,41 +894,60 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
   };
 
   usingCustomServer = async () => {
-    if (!this.state.customServerUri) {
+    if (!this.state.customServerUri && !this.state.customServerOffline) {
       return;
     }
     this.setState({ actionButtonsDisabled: true });
-    const uri: string = parseServerURI(this.state.customServerUri, this.state.translate);
-    const chainName = this.state.customServerChainName;
-    if (uri.toLowerCase().startsWith(GlobalConst.error)) {
-      this.addLastSnackbar({ message: this.state.translate('settings.isuri') as string });
-      this.setState({ actionButtonsDisabled: false });
-      return;
-    }
-
-    this.state.addLastSnackbar({ message: this.state.translate('loadedapp.tryingnewserver') as string });
-
-    const cs = {
-      uri: uri,
-      chainName: chainName,
-      region: '',
-      default: false,
-      latency: null,
-      obsolete: false,
-    } as ServerUrisType;
-    const serverChecked = await selectingServer([cs]);
-    if (serverChecked && serverChecked.latency) {
-      await SettingsFileImpl.writeSettings(SettingsNameEnum.server, { uri, chainName });
+    if (this.state.customServerOffline) {
+      await SettingsFileImpl.writeSettings(SettingsNameEnum.server, {
+        uri: '',
+        chainName: ChainNameEnum.mainChainName,
+      });
+      await SettingsFileImpl.writeSettings(SettingsNameEnum.selectServer, SelectServerEnum.offline);
       this.setState({
-        server: { uri, chainName },
+        selectServer: SelectServerEnum.offline,
+        server: { uri: '', chainName: ChainNameEnum.mainChainName },
         customServerShow: false,
         customServerUri: '',
         customServerChainName: ChainNameEnum.mainChainName,
+        customServerOffline: false,
       });
     } else {
-      this.state.addLastSnackbar({
-        message: (this.state.translate('loadedapp.changeservernew-error') as string) + uri,
-      });
+      const uri: string = parseServerURI(this.state.customServerUri, this.state.translate);
+      const chainName = this.state.customServerChainName;
+      if (uri.toLowerCase().startsWith(GlobalConst.error)) {
+        this.addLastSnackbar({ message: this.state.translate('settings.isuri') as string });
+        this.setState({ actionButtonsDisabled: false });
+        return;
+      }
+
+      this.state.addLastSnackbar({ message: this.state.translate('loadedapp.tryingnewserver') as string });
+
+      const cs = {
+        uri: uri,
+        chainName: chainName,
+        region: '',
+        default: false,
+        latency: null,
+        obsolete: false,
+      } as ServerUrisType;
+      const serverChecked = await selectingServer([cs]);
+      if (serverChecked && serverChecked.latency) {
+        await SettingsFileImpl.writeSettings(SettingsNameEnum.server, { uri, chainName });
+        await SettingsFileImpl.writeSettings(SettingsNameEnum.selectServer, SelectServerEnum.custom);
+        this.setState({
+          selectServer: SelectServerEnum.custom,
+          server: { uri, chainName },
+          customServerShow: false,
+          customServerUri: '',
+          customServerChainName: ChainNameEnum.mainChainName,
+          customServerOffline: false,
+        });
+      } else {
+        this.state.addLastSnackbar({
+          message: (this.state.translate('loadedapp.changeservernew-error') as string) + uri,
+        });
+      }
     }
     this.setState({ actionButtonsDisabled: false });
   };
@@ -1136,6 +1173,10 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
     this.setState({ customServerChainName: chain });
   };
 
+  onPressServerOffline = (value: boolean) => {
+    this.setState({ customServerOffline: value });
+  };
+
   addLastSnackbar = (snackbar: SnackbarType) => {
     const newSnackbars = this.state.snackbars;
     // if the last one is the same don't do anything.
@@ -1199,6 +1240,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
       customServerShow,
       customServerUri,
       customServerChainName,
+      customServerOffline,
       snackbars,
       mode,
       firstLaunchingMessage,
@@ -1340,7 +1382,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     />
                   </View>
 
-                  {netInfo.isConnected && (
+                  {netInfo.isConnected && this.state.selectServer !== SelectServerEnum.offline && (
                     <>
                       <BoldText style={{ fontSize: 15, marginBottom: 3 }}>
                         {`${translate('loadingapp.actualserver') as string} [${
@@ -1363,40 +1405,71 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                         justifyContent: 'center',
                         alignItems: 'center',
                       }}>
-                      <ChainTypeToggle
-                        customServerChainName={customServerChainName}
-                        onPress={this.onPressServerChainName}
-                        translate={translate}
-                      />
                       <View
                         style={{
-                          borderColor: colors.border,
-                          borderWidth: 1,
-                          marginBottom: 10,
-                          width: '100%',
-                          maxWidth: '100%',
-                          minWidth: '50%',
-                          minHeight: 48,
                           alignItems: 'center',
+                          justifyContent: 'center',
+                          margin: 0,
+                          marginBottom: 10,
+                          paddingHorizontal: 5,
+                          paddingVertical: 1,
+                          borderColor: customServerOffline ? colors.primary : colors.zingo,
+                          borderWidth: customServerOffline ? 2 : 1,
+                          borderRadius: 10,
+                          minWidth: 25,
+                          minHeight: 25,
                         }}>
-                        <TextInput
-                          placeholder={GlobalConst.serverPlaceHolder}
-                          placeholderTextColor={colors.placeholder}
-                          style={{
-                            color: colors.text,
-                            fontWeight: '600',
-                            fontSize: 18,
-                            minWidth: '90%',
-                            minHeight: 48,
-                            marginLeft: 5,
-                            backgroundColor: 'transparent',
-                          }}
-                          value={customServerUri}
-                          onChangeText={(text: string) => this.setState({ customServerUri: text })}
-                          editable={true}
-                          maxLength={100}
-                        />
+                        <TouchableOpacity onPress={() => this.onPressServerOffline(!customServerOffline)}>
+                          <View style={{ flexDirection: 'row', margin: 0, padding: 0 }}>
+                            <FontAwesomeIcon
+                              icon={faWifi}
+                              color={customServerOffline ? 'red' : colors.zingo}
+                              size={18}
+                            />
+                            <FadeText style={{ marginLeft: 10, marginRight: 5 }}>
+                              {translate('settings.server-offline') as string}
+                            </FadeText>
+                          </View>
+                        </TouchableOpacity>
                       </View>
+                      {!customServerOffline && (
+                        <>
+                          <ChainTypeToggle
+                            customServerChainName={customServerChainName}
+                            onPress={this.onPressServerChainName}
+                            translate={translate}
+                          />
+                          <View
+                            style={{
+                              borderColor: colors.border,
+                              borderWidth: 1,
+                              marginBottom: 10,
+                              width: '100%',
+                              maxWidth: '100%',
+                              minWidth: '50%',
+                              minHeight: 48,
+                              alignItems: 'center',
+                            }}>
+                            <TextInput
+                              placeholder={GlobalConst.serverPlaceHolder}
+                              placeholderTextColor={colors.placeholder}
+                              style={{
+                                color: colors.text,
+                                fontWeight: '600',
+                                fontSize: 18,
+                                minWidth: '90%',
+                                minHeight: 48,
+                                marginLeft: 5,
+                                backgroundColor: 'transparent',
+                              }}
+                              value={customServerUri}
+                              onChangeText={(text: string) => this.setState({ customServerUri: text })}
+                              editable={true}
+                              maxLength={100}
+                            />
+                          </View>
+                        </>
+                      )}
                       <View style={{ flexDirection: 'row' }}>
                         <Button
                           type={ButtonTypeEnum.Primary}
