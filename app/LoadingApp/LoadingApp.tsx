@@ -421,7 +421,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
         type: netInfoState.type,
         isConnectionExpensive: netInfoState.details && netInfoState.details.isConnectionExpensive,
       },
-      actionButtonsDisabled: !netInfoState.isConnected ? true : false,
+      //actionButtonsDisabled: !netInfoState.isConnected ? true : false,
     });
 
     //console.log('DID MOUNT APPLOADING...', netInfoState);
@@ -672,7 +672,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
             isConnectionExpensive: state.details && state.details.isConnectionExpensive,
           },
           screen: screen === 3 ? 3 : screen !== 0 ? 1 : 0,
-          actionButtonsDisabled: true,
+          //actionButtonsDisabled: true,
         });
         if (isConnected !== state.isConnected) {
           if (!state.isConnected) {
@@ -683,7 +683,9 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
           } else {
             //console.log('EVENT Loading: YESSSSS internet connection.');
             if (screen !== 0) {
-              this.setState({ screen: screen === 3 ? 3 : screen !== 0 ? 1 : 0 });
+              this.setState({
+                screen: screen === 3 ? 3 : screen !== 0 ? 1 : 0,
+              });
               // I need some time until the network is fully ready.
               setTimeout(() => this.componentDidMount(), 1000);
             }
@@ -691,6 +693,19 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
         }
       }
     });
+
+    // if it is offline & there is no wallet file
+    // the screen is going to be empty
+    // show the custom server component
+    if (
+      this.state.netInfo.isConnected &&
+      this.state.selectServer === SelectServerEnum.offline &&
+      !this.state.walletExists
+    ) {
+      this.setState({
+        customServerShow: true,
+      });
+    }
   };
 
   componentWillUnmount = () => {
@@ -1355,6 +1370,15 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                       />
                     )}
                   </>
+                )}
+                {!netInfo.isConnected && hasRecoveryWalletInfoSaved && (
+                  <OptionsMenu
+                    customButton={<FontAwesomeIcon icon={faEllipsisV} color={'#ffffff'} size={40} />}
+                    buttonStyle={{ width: 40, padding: 10, resizeMode: 'contain' }}
+                    destructiveIndex={5}
+                    options={[translate('loadingapp.recoverkeys'), translate('cancel')]}
+                    actions={[() => this.recoverRecoveryWalletInfo(true)]}
+                  />
                 )}
               </View>
               <ScrollView
