@@ -1247,6 +1247,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
       biometricsFailed,
       translate,
       hasRecoveryWalletInfoSaved,
+      selectServer,
     } = this.state;
     const { colors } = this.props.theme;
 
@@ -1553,7 +1554,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     </View>
                   )}
 
-                  {netInfo.isConnected && (
+                  {netInfo.isConnected && selectServer !== SelectServerEnum.offline && (
                     <Button
                       testID="loadingapp.createnewwallet"
                       type={ButtonTypeEnum.Primary}
@@ -1597,7 +1598,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     />
                   )}
 
-                  {netInfo.isConnected && (
+                  {netInfo.isConnected && selectServer !== SelectServerEnum.offline && (
                     <View style={{ marginTop: 20, display: 'flex', alignItems: 'center' }}>
                       <Button
                         testID="loadingapp.restorewalletseedufvk"

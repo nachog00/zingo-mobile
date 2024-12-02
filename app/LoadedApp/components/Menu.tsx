@@ -149,7 +149,7 @@ const Menu: React.FunctionComponent<MenuProps> = ({ onItemSelected, updateMenuSt
             </RegText>
           )}
 
-          {mode !== ModeEnum.basic && (
+          {mode !== ModeEnum.basic && selectServer !== SelectServerEnum.offline && (
             <RegText
               testID="menu.changewallet"
               onPress={() => onItemSelectedWrapper(MenuItemEnum.ChangeWallet)}
