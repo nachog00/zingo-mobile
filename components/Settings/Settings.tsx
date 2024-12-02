@@ -864,6 +864,7 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
                           customServerChainName={customServerChainName}
                           onPress={onPressServerChainName}
                           translate={translate}
+                          disabled={disabled}
                         />
                       </View>
                     </View>

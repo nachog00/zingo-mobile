@@ -12,18 +12,21 @@ type ChainTypeToggleProps = {
   customServerChainName: string;
   onPress: (chain: ChainNameEnum) => void;
   translate: (key: string) => TranslateType;
+  disabled?: boolean;
 };
 
 const ChainTypeToggle: React.FunctionComponent<ChainTypeToggleProps> = ({
   customServerChainName,
   onPress,
   translate,
+  disabled,
 }) => {
   const { colors } = useTheme() as unknown as ThemeType;
 
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
       <TouchableOpacity
+        disabled={disabled}
         testID="settings.custom-server-chain.mainnet"
         style={{ marginHorizontal: 5 }}
         onPress={() => onPress(ChainNameEnum.mainChainName)}>
@@ -60,6 +63,7 @@ const ChainTypeToggle: React.FunctionComponent<ChainTypeToggleProps> = ({
         </View>
       </TouchableOpacity>
       <TouchableOpacity
+        disabled={disabled}
         testID="settings.custom-server-chain.testnet"
         style={{ marginHorizontal: 5 }}
         onPress={() => onPress(ChainNameEnum.testChainName)}>
@@ -96,6 +100,7 @@ const ChainTypeToggle: React.FunctionComponent<ChainTypeToggleProps> = ({
         </View>
       </TouchableOpacity>
       <TouchableOpacity
+        disabled={disabled}
         testID="settings.custom-server-chain.regtest"
         style={{ marginHorizontal: 5 }}
         onPress={() => onPress(ChainNameEnum.regtestChainName)}>

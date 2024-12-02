@@ -1383,14 +1383,27 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     />
                   </View>
 
-                  {netInfo.isConnected && this.state.selectServer !== SelectServerEnum.offline && (
+                  {netInfo.isConnected && (
                     <>
-                      <BoldText style={{ fontSize: 15, marginBottom: 3 }}>
-                        {`${translate('loadingapp.actualserver') as string} [${
-                          translate(`settings.value-chainname-${server.chainName}`) as string
-                        }]`}
-                      </BoldText>
-                      <BoldText style={{ fontSize: 15, marginBottom: 10 }}>{server.uri}</BoldText>
+                      {this.state.selectServer !== SelectServerEnum.offline ? (
+                        <>
+                          <BoldText style={{ fontSize: 15, marginBottom: 3 }}>
+                            {`${translate('loadingapp.actualserver') as string} [${
+                              translate(`settings.value-chainname-${server.chainName}`) as string
+                            }]`}
+                          </BoldText>
+                          <BoldText style={{ fontSize: 15, marginBottom: 10 }}>{server.uri}</BoldText>
+                        </>
+                      ) : (
+                        <View style={{ flexDirection: 'row' }}>
+                          <BoldText style={{ fontSize: 15, marginBottom: 3 }}>
+                            {translate('loadingapp.actualserver') as string}
+                          </BoldText>
+                          <BoldText style={{ fontSize: 15, marginBottom: 3, color: 'red' }}>
+                            {' ' + (translate('settings.server-offline') as string)}
+                          </BoldText>
+                        </View>
+                      )}
                     </>
                   )}
 
@@ -1406,39 +1419,42 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                         justifyContent: 'center',
                         alignItems: 'center',
                       }}>
-                      <View
-                        style={{
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          margin: 0,
-                          marginBottom: 10,
-                          paddingHorizontal: 5,
-                          paddingVertical: 1,
-                          borderColor: customServerOffline ? colors.primary : colors.zingo,
-                          borderWidth: customServerOffline ? 2 : 1,
-                          borderRadius: 10,
-                          minWidth: 25,
-                          minHeight: 25,
-                        }}>
-                        <TouchableOpacity onPress={() => this.onPressServerOffline(!customServerOffline)}>
-                          <View style={{ flexDirection: 'row', margin: 0, padding: 0 }}>
-                            <FontAwesomeIcon
-                              icon={faWifi}
-                              color={customServerOffline ? 'red' : colors.zingo}
-                              size={18}
-                            />
-                            <FadeText style={{ marginLeft: 10, marginRight: 5 }}>
-                              {translate('settings.server-offline') as string}
-                            </FadeText>
-                          </View>
-                        </TouchableOpacity>
-                      </View>
+                      {selectServer !== SelectServerEnum.offline && (
+                        <View
+                          style={{
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: 0,
+                            marginBottom: 10,
+                            paddingHorizontal: 5,
+                            paddingVertical: 1,
+                            borderColor: customServerOffline ? colors.primary : colors.zingo,
+                            borderWidth: customServerOffline ? 2 : 1,
+                            borderRadius: 10,
+                            minWidth: 25,
+                            minHeight: 25,
+                          }}>
+                          <TouchableOpacity onPress={() => this.onPressServerOffline(!customServerOffline)}>
+                            <View style={{ flexDirection: 'row', margin: 0, padding: 0 }}>
+                              <FontAwesomeIcon
+                                icon={faWifi}
+                                color={customServerOffline ? 'red' : colors.zingo}
+                                size={18}
+                              />
+                              <FadeText style={{ marginLeft: 10, marginRight: 5 }}>
+                                {translate('settings.server-offline') as string}
+                              </FadeText>
+                            </View>
+                          </TouchableOpacity>
+                        </View>
+                      )}
                       {!customServerOffline && (
                         <>
                           <ChainTypeToggle
                             customServerChainName={customServerChainName}
                             onPress={this.onPressServerChainName}
                             translate={translate}
+                            disabled={actionButtonsDisabled}
                           />
                           <View
                             style={{
@@ -1465,7 +1481,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                               }}
                               value={customServerUri}
                               onChangeText={(text: string) => this.setState({ customServerUri: text })}
-                              editable={true}
+                              editable={!actionButtonsDisabled}
                               maxLength={100}
                             />
                           </View>
