@@ -531,7 +531,8 @@ const Send: React.FunctionComponent<SendProps> = ({
 
   useEffect(() => {
     const getMemoEnabled = async (address: string, serverChainName: string): Promise<boolean> => {
-      if (!netInfo.isConnected) {
+      // should check this in Offline mode
+      if (!netInfo.isConnected && selectServer !== SelectServerEnum.offline) {
         addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
         return false;
       }
@@ -552,11 +553,12 @@ const Send: React.FunctionComponent<SendProps> = ({
       updateToField(null, null, null, '', false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [server.chainName, netInfo.isConnected, sendPageState.toaddr.to, translate, addLastSnackbar]);
+  }, [server.chainName, netInfo.isConnected, sendPageState.toaddr.to, translate, addLastSnackbar, selectServer]);
 
   useEffect(() => {
     const parseAddress = async (address: string, serverChainName: string): Promise<boolean> => {
-      if (!netInfo.isConnected) {
+      // should check this in Offline mode
+      if (!netInfo.isConnected && selectServer !== SelectServerEnum.offline) {
         addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
         return false;
       }
@@ -629,6 +631,7 @@ const Send: React.FunctionComponent<SendProps> = ({
     maxAmount,
     uaAddress,
     memoTotal,
+    selectServer,
   ]);
 
   useEffect(() => {
@@ -722,6 +725,7 @@ const Send: React.FunctionComponent<SendProps> = ({
   }, [addresses, sendPageState.toaddr.to, server.chainName]);
 
   const confirmSend = async () => {
+    // same error even if is Offline mode.
     if (!netInfo.isConnected) {
       setConfirmModalVisible(false);
       addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
@@ -1744,6 +1748,7 @@ const Send: React.FunctionComponent<SendProps> = ({
                     updateToField(null, Utils.getZenniesDonationAmount(), null, null, false);
                     return;
                   }
+                  // same error even if is Offline mode.
                   if (!netInfo.isConnected) {
                     addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
                     return;

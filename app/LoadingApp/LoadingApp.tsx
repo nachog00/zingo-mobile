@@ -508,7 +508,9 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
     if (exists && exists !== GlobalConst.false) {
       this.setState({ walletExists: true });
       const networkState = await NetInfo.fetch();
-      if (networkState.isConnected) {
+      // if have internet connection or is in Offline mode
+      // can load the wallet.
+      if (networkState.isConnected || this.state.selectServer === SelectServerEnum.offline) {
         let result: string = await RPCModule.loadExistingWallet(this.state.server.uri, this.state.server.chainName);
         //let result = 'Error: pepe es guapo';
 
@@ -677,11 +679,21 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
         if (isConnected !== state.isConnected) {
           if (!state.isConnected) {
             //console.log('EVENT Loading: No internet connection.');
-            this.addLastSnackbar({
-              message: this.state.translate('loadedapp.connection-error') as string,
+            this.setState({
+              customServerShow: false,
             });
+            if (this.state.selectServer !== SelectServerEnum.offline) {
+              this.addLastSnackbar({
+                message: this.state.translate('loadedapp.connection-error') as string,
+              });
+            }
           } else {
             //console.log('EVENT Loading: YESSSSS internet connection.');
+            if (this.state.selectServer === SelectServerEnum.offline && !this.state.walletExists) {
+              this.setState({
+                customServerShow: true,
+              });
+            }
             if (screen !== 0) {
               this.setState({
                 screen: screen === 3 ? 3 : screen !== 0 ? 1 : 0,
@@ -976,6 +988,11 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
   };
 
   createNewWallet = (goSeedScreen: boolean = true) => {
+    // should do this in Offline mode in some future.
+    if (!this.state.netInfo.isConnected && this.state.selectServer !== SelectServerEnum.offline) {
+      this.addLastSnackbar({ message: this.state.translate('loadedapp.connection-error') as string });
+      return;
+    }
     this.setState({ actionButtonsDisabled: true });
     setTimeout(async () => {
       let seed: string = await RPCModule.createNewWallet(this.state.server.uri, this.state.server.chainName);
@@ -1177,11 +1194,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
   };
 
   customServer = () => {
-    if (this.state.netInfo.isConnected) {
-      this.setState({ customServerShow: true });
-    } else {
-      this.addLastSnackbar({ message: this.state.translate('loadedapp.connection-error') as string });
-    }
+    this.setState({ customServerShow: true });
   };
 
   onPressServerChainName = (chain: ChainNameEnum) => {
@@ -1407,28 +1420,25 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     />
                   </View>
 
-                  {netInfo.isConnected && (
+                  {netInfo.isConnected && selectServer !== SelectServerEnum.offline && (
                     <>
-                      {this.state.selectServer !== SelectServerEnum.offline ? (
-                        <>
-                          <BoldText style={{ fontSize: 15, marginBottom: 3 }}>
-                            {`${translate('loadingapp.actualserver') as string} [${
-                              translate(`settings.value-chainname-${server.chainName}`) as string
-                            }]`}
-                          </BoldText>
-                          <BoldText style={{ fontSize: 15, marginBottom: 10 }}>{server.uri}</BoldText>
-                        </>
-                      ) : (
-                        <View style={{ flexDirection: 'row' }}>
-                          <BoldText style={{ fontSize: 15, marginBottom: 3 }}>
-                            {translate('loadingapp.actualserver') as string}
-                          </BoldText>
-                          <BoldText style={{ fontSize: 15, marginBottom: 3, color: 'red' }}>
-                            {' ' + (translate('settings.server-offline') as string)}
-                          </BoldText>
-                        </View>
-                      )}
+                      <BoldText style={{ fontSize: 15, marginBottom: 3 }}>
+                        {`${translate('loadingapp.actualserver') as string} [${
+                          translate(`settings.value-chainname-${server.chainName}`) as string
+                        }]`}
+                      </BoldText>
+                      <BoldText style={{ fontSize: 15, marginBottom: 10 }}>{server.uri}</BoldText>
                     </>
+                  )}
+                  {selectServer === SelectServerEnum.offline && (
+                    <View style={{ flexDirection: 'row' }}>
+                      <BoldText style={{ fontSize: 15, marginBottom: 3 }}>
+                        {translate('loadingapp.actualserver') as string}
+                      </BoldText>
+                      <BoldText style={{ fontSize: 15, marginBottom: 3, color: 'red' }}>
+                        {' ' + (translate('settings.server-offline') as string)}
+                      </BoldText>
+                    </View>
                   )}
 
                   {customServerShow && (
@@ -1651,7 +1661,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     </View>
                   )}
 
-                  {!netInfo.isConnected && (
+                  {!netInfo.isConnected && selectServer !== SelectServerEnum.offline && (
                     <View
                       style={{
                         display: 'flex',

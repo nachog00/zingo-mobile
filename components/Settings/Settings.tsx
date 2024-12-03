@@ -334,7 +334,7 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
       return;
     }
 
-    if (serverContext.uri !== serverUriParsed && selectServer !== SelectServerEnum.offline) {
+    if (serverContext.uri !== serverUriParsed && selectServerContext !== SelectServerEnum.offline) {
       const resultUri = parseServerURI(serverUriParsed, translate);
       if (resultUri.toLowerCase().startsWith(GlobalConst.error)) {
         addLastSnackbar({ message: translate('settings.isuri') as string });
@@ -360,15 +360,15 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
       }
     }
 
-    if (!netInfo.isConnected) {
-      addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
-      return;
-    }
-
     if (
       (serverContext.uri !== serverUriParsed || serverContext.chainName !== chainNameParsed) &&
-      selectServer !== SelectServerEnum.offline
+      selectServerContext !== SelectServerEnum.offline
     ) {
+      // I need internet connection to change the server.
+      if (!netInfo.isConnected) {
+        addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
+        return;
+      }
       setDisabled(true);
       addLastSnackbar({ message: translate('loadedapp.tryingnewserver') as string });
       const { result, timeout, newChainName } = await checkServerURI(serverUriParsed, serverContext.uri);
@@ -395,9 +395,19 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
     }
 
     if (walletSettings.downloadMemos !== memos) {
+      // I need internet connection to change the server.
+      if (!netInfo.isConnected) {
+        addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
+        return;
+      }
       await setWalletOption(WalletOptionEnum.downloadMemos, memos);
     }
     if (walletSettings.transactionFilterThreshold !== filter) {
+      // I need internet connection to change the server.
+      if (!netInfo.isConnected) {
+        addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
+        return;
+      }
       await setWalletOption(WalletOptionEnum.transactionFilterThreshold, filter);
     }
     if (currencyContext !== currency) {

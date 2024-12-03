@@ -26,6 +26,7 @@ const Rescan: React.FunctionComponent<RescanProps> = ({ closeModal, doRescan }) 
   moment.locale(language);
 
   const doRescanAndClose = () => {
+    // same error even if is Offline mode.
     if (!netInfo.isConnected) {
       addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
       return;

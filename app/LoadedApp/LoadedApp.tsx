@@ -630,9 +630,11 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
             //console.log('EVENT Loaded: No internet connection.');
             await this.rpc.clearTimers();
             this.setSyncingStatus(new SyncingStatusClass());
-            this.addLastSnackbar({
-              message: this.state.translate('loadedapp.connection-error') as string,
-            });
+            if (this.state.selectServer !== SelectServerEnum.offline) {
+              this.addLastSnackbar({
+                message: this.state.translate('loadedapp.connection-error') as string,
+              });
+            }
           } else {
             //console.log('EVENT Loaded: YES internet connection.');
             if (this.rpc.getInRefresh()) {

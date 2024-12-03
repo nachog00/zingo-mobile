@@ -23,7 +23,13 @@ import 'moment/locale/ru';
 import { ThemeType } from '../../../app/types';
 import RPC from '../../../app/rpc';
 import Utils from '../../../app/utils';
-import { ButtonTypeEnum, CommandEnum, PrivacyLevelFromEnum, GlobalConst } from '../../../app/AppState';
+import {
+  ButtonTypeEnum,
+  CommandEnum,
+  PrivacyLevelFromEnum,
+  GlobalConst,
+  SelectServerEnum,
+} from '../../../app/AppState';
 import { CurrencyEnum } from '../../../app/AppState';
 import { RPCAddressKindEnum } from '../../../app/rpc/enums/RPCAddressKindEnum';
 import { RPCReceiversEnum } from '../../../app/rpc/enums/RPCReceiversEnum';
@@ -68,6 +74,7 @@ const Confirm: React.FunctionComponent<ConfirmProps> = ({
     server,
     security,
     language,
+    selectServer,
   } = context;
   const { colors } = useTheme() as unknown as ThemeType;
   moment.locale(language);
@@ -86,7 +93,8 @@ const Confirm: React.FunctionComponent<ConfirmProps> = ({
    * @returns {string} The privacy level.
    */
   const getPrivacyLevel = useCallback(async () => {
-    if (!netInfo.isConnected) {
+    // should check this in Offline mode
+    if (!netInfo.isConnected && selectServer !== SelectServerEnum.offline) {
       addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
       return '-';
     }
