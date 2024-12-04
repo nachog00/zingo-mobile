@@ -247,8 +247,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
     if (!setComputingModalVisible || !setBackgroundError || !addLastSnackbar) {
       return;
     }
-    // same error even if is Offline mode.
-    if (!netInfo.isConnected) {
+    if (!netInfo.isConnected || selectServer === SelectServerEnum.offline) {
       addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
       return;
     }

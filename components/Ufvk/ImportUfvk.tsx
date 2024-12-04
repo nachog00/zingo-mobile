@@ -111,8 +111,7 @@ const ImportUfvk: React.FunctionComponent<ImportUfvkProps> = ({ onClickCancel, o
   }, [seedufvkText]);
 
   const okButton = async () => {
-    // should do this in Offline mode in some future.
-    if (!netInfo.isConnected && selectServer !== SelectServerEnum.offline) {
+    if (!netInfo.isConnected || selectServer === SelectServerEnum.offline) {
       addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
       return;
     }

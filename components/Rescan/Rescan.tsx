@@ -12,7 +12,7 @@ import moment from 'moment';
 import 'moment/locale/es';
 import 'moment/locale/pt';
 import 'moment/locale/ru';
-import { ButtonTypeEnum } from '../../app/AppState';
+import { ButtonTypeEnum, SelectServerEnum } from '../../app/AppState';
 
 type RescanProps = {
   closeModal: () => void;
@@ -21,13 +21,12 @@ type RescanProps = {
 
 const Rescan: React.FunctionComponent<RescanProps> = ({ closeModal, doRescan }) => {
   const context = useContext(ContextAppLoaded);
-  const { wallet, translate, netInfo, addLastSnackbar, language } = context;
+  const { wallet, translate, netInfo, addLastSnackbar, language, selectServer } = context;
   const { colors } = useTheme() as unknown as ThemeType;
   moment.locale(language);
 
   const doRescanAndClose = () => {
-    // same error even if is Offline mode.
-    if (!netInfo.isConnected) {
+    if (!netInfo.isConnected || selectServer === SelectServerEnum.offline) {
       addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
       return;
     }

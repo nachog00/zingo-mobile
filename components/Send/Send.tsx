@@ -711,8 +711,7 @@ const Send: React.FunctionComponent<SendProps> = ({
   }, [addresses, sendPageState.toaddr.to, server.chainName]);
 
   const confirmSend = async () => {
-    // same error even if is Offline mode.
-    if (!netInfo.isConnected) {
+    if (!netInfo.isConnected || selectServer === SelectServerEnum.offline) {
       setConfirmModalVisible(false);
       addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
       return;
@@ -1734,8 +1733,7 @@ const Send: React.FunctionComponent<SendProps> = ({
                     updateToField(null, Utils.getZenniesDonationAmount(), null, null, false);
                     return;
                   }
-                  // same error even if is Offline mode.
-                  if (!netInfo.isConnected) {
+                  if (!netInfo.isConnected || selectServer === SelectServerEnum.offline) {
                     addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
                     return;
                   }

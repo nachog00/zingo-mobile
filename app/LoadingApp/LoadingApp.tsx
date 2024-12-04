@@ -972,8 +972,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
   };
 
   createNewWallet = (goSeedScreen: boolean = true) => {
-    // should do this in Offline mode in some future.
-    if (!this.state.netInfo.isConnected && this.state.selectServer !== SelectServerEnum.offline) {
+    if (!this.state.netInfo.isConnected || this.state.selectServer === SelectServerEnum.offline) {
       this.addLastSnackbar({ message: this.state.translate('loadedapp.connection-error') as string });
       return;
     }

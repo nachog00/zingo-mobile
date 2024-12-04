@@ -364,8 +364,7 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
       (serverContext.uri !== serverUriParsed || serverContext.chainName !== chainNameParsed) &&
       selectServerContext !== SelectServerEnum.offline
     ) {
-      // I need internet connection to change the server.
-      if (!netInfo.isConnected) {
+      if (!netInfo.isConnected || selectServer === SelectServerEnum.offline) {
         addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
         return;
       }
@@ -395,16 +394,14 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
     }
 
     if (walletSettings.downloadMemos !== memos) {
-      // I need internet connection to change the server.
-      if (!netInfo.isConnected) {
+      if (!netInfo.isConnected || selectServer === SelectServerEnum.offline) {
         addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
         return;
       }
       await setWalletOption(WalletOptionEnum.downloadMemos, memos);
     }
     if (walletSettings.transactionFilterThreshold !== filter) {
-      // I need internet connection to change the server.
-      if (!netInfo.isConnected) {
+      if (!netInfo.isConnected || selectServer === SelectServerEnum.offline) {
         addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
         return;
       }
