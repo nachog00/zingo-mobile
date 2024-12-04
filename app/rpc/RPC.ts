@@ -189,17 +189,17 @@ export default class RPC {
   // Special method to get the Info object. This is used both internally and by the Loading screen
   static async rpcGetInfoObject(): Promise<InfoType> {
     try {
+      let infoError: boolean = false;
       const infoStr: string = await RPCModule.execute(CommandEnum.info, '');
       if (infoStr) {
         if (infoStr.toLowerCase().startsWith(GlobalConst.error)) {
           console.log(`Error info ${infoStr}`);
-          return {} as InfoType;
+          infoError = true;
         }
       } else {
         console.log('Internal Error info');
-        return {} as InfoType;
+        infoError = true;
       }
-      const infoJSON: RPCInfoType = await JSON.parse(infoStr);
 
       let zingolibStr: string = await RPCModule.execute(CommandEnum.version, '');
       if (zingolibStr) {
@@ -211,12 +211,25 @@ export default class RPC {
         console.log('Internal Error zingolib version');
         zingolibStr = '<none>';
       }
-      //const zingolibJSON = await JSON.parse(zingolibStr);
+
+      if (infoError) {
+        return {
+          latestBlock: 0,
+          zingolib: zingolibStr,
+          serverUri: '',
+          connections: 1,
+          solps: 0,
+          verificationProgress: 1,
+          version: '',
+        } as InfoType;
+      }
+
+      const infoJSON: RPCInfoType = await JSON.parse(infoStr);
 
       const info: InfoType = {
         chainName: infoJSON.chain_name,
         latestBlock: infoJSON.latest_block_height,
-        serverUri: infoJSON.server_uri || '<none>',
+        serverUri: infoJSON.server_uri || '',
         connections: 1,
         version: `${infoJSON.vendor}/${infoJSON.git_commit ? infoJSON.git_commit.substring(0, 6) : ''}/${
           infoJSON.version
@@ -231,21 +244,6 @@ export default class RPC {
     } catch (error) {
       console.log(`Critical Error info ${error}`);
       return {} as InfoType;
-    }
-  }
-
-  static async rpcFetchServerHeight(): Promise<number> {
-    try {
-      const info = await RPC.rpcGetInfoObject();
-
-      if (info) {
-        return info.latestBlock;
-      }
-
-      return 0;
-    } catch (error) {
-      console.log(`Critical Error server block height ${error}`);
-      return 0;
     }
   }
 

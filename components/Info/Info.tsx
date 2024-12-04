@@ -57,19 +57,13 @@ const Info: React.FunctionComponent<InfoProps> = ({ closeModal, setZecPrice }) =
             label={translate('info.version') as string}
             value={translate('zingo') + ' ' + translate('version')}
           />
-          <DetailLine
-            label={translate('info.serverversion') as string}
-            value={info.version ? info.version : (translate('loading') as string)}
-          />
-          <DetailLine
-            label={translate('info.lightwalletd') as string}
-            value={info.serverUri ? info.serverUri : (translate('loading') as string)}
-          />
+          <DetailLine label={translate('info.serverversion') as string} value={info.version ? info.version : '-'} />
+          <DetailLine label={translate('info.lightwalletd') as string} value={info.serverUri ? info.serverUri : '-'} />
           <DetailLine
             label={translate('info.network') as string}
             value={
               !info.chainName
-                ? (translate('loading') as string)
+                ? '-'
                 : info.chainName === ChainNameEnum.mainChainName
                 ? 'Mainnet'
                 : info.chainName === ChainNameEnum.testChainName
@@ -81,7 +75,7 @@ const Info: React.FunctionComponent<InfoProps> = ({ closeModal, setZecPrice }) =
           />
           <DetailLine
             label={translate('info.serverblock') as string}
-            value={info.latestBlock ? info.latestBlock.toString() : (translate('loading') as string)}
+            value={info.latestBlock ? info.latestBlock.toString() : '-'}
           />
           {currency === CurrencyEnum.USDCurrency && (
             <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>

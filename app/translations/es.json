@@ -139,7 +139,7 @@
     "messages-menu": "MENSAJES",
     "syncing": "Pausando la Sincronización para poder Completar la Transacción.",
     "zcash-url": "Ya tienes una dirección en la pantalla de envío",
-    "connection-error": "No existe conexión a Internet, Zingo así no puede funcionar correctamente.",
+    "connection-error": "Esta opción necesita conexión a internet para ser ejecutada.",
     "tryingnewserver": "Intentando conectar con el nuevo Servidor... Puede llevar varios segundos.",
     "tryingnewserver-error": "Después de 30 segundos el nuevo Servidor no responde.",
     "readingwallet": "Leyendo satisfactoriamente el monedero activo usando el Servidor:",

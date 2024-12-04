@@ -531,11 +531,6 @@ const Send: React.FunctionComponent<SendProps> = ({
 
   useEffect(() => {
     const getMemoEnabled = async (address: string, serverChainName: string): Promise<boolean> => {
-      // should check this in Offline mode
-      if (!netInfo.isConnected && selectServer !== SelectServerEnum.offline) {
-        addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
-        return false;
-      }
       return await Utils.isValidOrchardOrSaplingAddress(address, serverChainName);
     };
 
@@ -553,15 +548,10 @@ const Send: React.FunctionComponent<SendProps> = ({
       updateToField(null, null, null, '', false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [server.chainName, netInfo.isConnected, sendPageState.toaddr.to, translate, addLastSnackbar, selectServer]);
+  }, [server.chainName, sendPageState.toaddr.to]);
 
   useEffect(() => {
     const parseAddress = async (address: string, serverChainName: string): Promise<boolean> => {
-      // should check this in Offline mode
-      if (!netInfo.isConnected && selectServer !== SelectServerEnum.offline) {
-        addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
-        return false;
-      }
       return await Utils.isValidAddress(address, serverChainName);
     };
 
@@ -617,21 +607,17 @@ const Send: React.FunctionComponent<SendProps> = ({
     donationAddress,
     decimalSeparator,
     server.chainName,
-    netInfo.isConnected,
     sendPageState.toaddr,
     sendPageState.toaddr.to,
     sendPageState.toaddr.amountCurrency,
     sendPageState.toaddr.amount,
     sendPageState.toaddr.memo,
     sendPageState.toaddr.includeUAMemo,
-    translate,
-    addLastSnackbar,
     spendable,
     fee,
     maxAmount,
     uaAddress,
     memoTotal,
-    selectServer,
   ]);
 
   useEffect(() => {

@@ -7,7 +7,7 @@ import moment from 'moment';
 import 'moment/locale/es';
 import 'moment/locale/pt';
 import 'moment/locale/ru';
-import { GlobalConst, SelectServerEnum } from '../../../app/AppState';
+import { GlobalConst } from '../../../app/AppState';
 import Utils from '../../../app/utils';
 
 type ScannerAddressProps = {
@@ -17,15 +17,10 @@ type ScannerAddressProps = {
 
 const ScannerAddress: React.FunctionComponent<ScannerAddressProps> = ({ setAddress, closeModal }) => {
   const context = useContext(ContextAppLoaded);
-  const { translate, netInfo, server, addLastSnackbar, language, selectServer } = context;
+  const { translate, server, language } = context;
   moment.locale(language);
 
   const validateAddress = async (scannedAddress: string) => {
-    // should check this in Offline mode
-    if (!netInfo.isConnected && selectServer !== SelectServerEnum.offline) {
-      addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
-      return;
-    }
     if (scannedAddress.toLowerCase().startsWith(GlobalConst.zcash)) {
       setAddress(scannedAddress);
       closeModal();

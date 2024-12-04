@@ -65,6 +65,7 @@ import {
   ReceivePageStateClass,
   ValueTransferType,
   ValueTransferKindEnum,
+  CurrencyNameEnum,
 } from '../AppState';
 import Utils from '../utils';
 import { ThemeType } from '../types';
@@ -981,11 +982,21 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       //console.log('fetch info');
       let newInfo = info;
       // if currencyName is empty,
-      // I need to rescue the last value from the state.
+      // I need to rescue the last value from the state,
+      // or rescue the value from server.chainName.
       if (!newInfo.currencyName) {
         if (this.state.info.currencyName) {
           newInfo.currencyName = this.state.info.currencyName;
+        } else {
+          newInfo.currencyName =
+            this.state.server.chainName === ChainNameEnum.mainChainName ? CurrencyNameEnum.ZEC : CurrencyNameEnum.TAZ;
         }
+      }
+      if (!newInfo.chainName) {
+        newInfo.chainName = this.state.server.chainName;
+      }
+      if (!newInfo.serverUri) {
+        newInfo.serverUri = this.state.server.uri;
       }
       this.setState({ info: newInfo });
     }
@@ -1403,8 +1414,10 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
     // no need to do backups of the wallets.
     let resultStr = '';
     if (server.chainName === ChainNameEnum.mainChainName) {
+      // backup
       resultStr = (await this.rpc.changeWallet()) as string;
     } else {
+      // no backup
       resultStr = (await this.rpc.changeWalletNoBackup()) as string;
     }
 

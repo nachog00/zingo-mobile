@@ -682,13 +682,11 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
             this.setState({
               customServerShow: false,
             });
-            if (this.state.selectServer !== SelectServerEnum.offline) {
-              this.addLastSnackbar({
-                message: this.state.translate('loadedapp.connection-error') as string,
-              });
-            }
           } else {
             //console.log('EVENT Loading: YESSSSS internet connection.');
+            // if it is offline & there is no wallet file
+            // the screen is going to be empty
+            // show the custom server component
             if (this.state.selectServer === SelectServerEnum.offline && !this.state.walletExists) {
               this.setState({
                 customServerShow: true,
@@ -928,15 +926,15 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
     if (this.state.customServerOffline) {
       await SettingsFileImpl.writeSettings(SettingsNameEnum.server, {
         uri: '',
-        chainName: ChainNameEnum.mainChainName,
+        chainName: this.state.server.chainName,
       });
       await SettingsFileImpl.writeSettings(SettingsNameEnum.selectServer, SelectServerEnum.offline);
       this.setState({
         selectServer: SelectServerEnum.offline,
-        server: { uri: '', chainName: ChainNameEnum.mainChainName },
+        server: { uri: '', chainName: this.state.server.chainName },
         customServerShow: false,
         customServerUri: '',
-        customServerChainName: ChainNameEnum.mainChainName,
+        customServerChainName: this.state.server.chainName,
         customServerOffline: false,
       });
     } else {
@@ -967,7 +965,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
           server: { uri, chainName },
           customServerShow: false,
           customServerUri: '',
-          customServerChainName: ChainNameEnum.mainChainName,
+          customServerChainName: this.state.server.chainName,
           customServerOffline: false,
         });
       } else {

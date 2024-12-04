@@ -247,6 +247,11 @@ const Header: React.FunctionComponent<HeaderProps> = ({
     if (!setComputingModalVisible || !setBackgroundError || !addLastSnackbar) {
       return;
     }
+    // same error even if is Offline mode.
+    if (!netInfo.isConnected) {
+      addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
+      return;
+    }
 
     // now zingolib only can shield `transparent`.
     let pools: PoolToShieldEnum = PoolToShieldEnum.transparentPoolToShield;
@@ -555,7 +560,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
               </>
             ) : (
               <>
-                {mode === ModeEnum.advanced && (
+                {netInfo.isConnected && mode === ModeEnum.advanced && (
                   <View
                     style={{
                       alignItems: 'center',
