@@ -347,6 +347,8 @@ const Header: React.FunctionComponent<HeaderProps> = ({
       } else {
         animationRef.current?.stop();
       }
+    } else {
+      animationRef.current?.stop();
     }
 
     return () => {
@@ -427,7 +429,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
             justifyContent: 'center',
             backgroundColor: colors.card,
             margin: 0,
-            marginHorizontal: 5,
+            marginRight: 5,
             padding: 0,
             minWidth: 25,
             minHeight: 25,
@@ -583,6 +585,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
                       justifyContent: 'center',
                       margin: 0,
                       marginRight: 5,
+                      padding: 0,
                       minWidth: 25,
                       minHeight: 25,
                     }}>
