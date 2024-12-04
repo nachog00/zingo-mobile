@@ -63,7 +63,7 @@ type HeaderProps = {
   testID?: string;
   translate?: (key: string) => TranslateType;
   netInfo?: NetInfoType;
-  mode?: ModeEnum.basic | ModeEnum.advanced;
+  mode?: ModeEnum;
   setComputingModalVisible?: (visible: boolean) => void;
   setBackgroundError?: (title: string, error: string) => void;
   noPrivacy?: boolean;
@@ -120,7 +120,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
     selectServer,
   } = context;
 
-  let translate: (key: string) => TranslateType, netInfo: NetInfoType, mode: ModeEnum.basic | ModeEnum.advanced;
+  let translate: (key: string) => TranslateType, netInfo: NetInfoType, mode: ModeEnum;
   if (translateProp) {
     translate = translateProp;
   } else {
@@ -581,28 +581,24 @@ const Header: React.FunctionComponent<HeaderProps> = ({
               </>
             )}
             {(!netInfo.isConnected || netInfo.type === NetInfoStateType.cellular || netInfo.isConnectionExpensive) && (
-              <>
-                {mode !== ModeEnum.basic && (
-                  <View
-                    style={{
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      margin: 0,
-                      marginRight: 5,
-                      padding: 0,
-                      minWidth: 25,
-                      minHeight: 25,
-                    }}>
-                    <TouchableOpacity onPress={() => syncingStatusMoreInfoOnClick && syncingStatusMoreInfoOnClick()}>
-                      <FontAwesomeIcon
-                        icon={faCloudDownload}
-                        color={!netInfo.isConnected ? 'red' : 'yellow'}
-                        size={20}
-                      />
-                    </TouchableOpacity>
-                  </View>
+              <View
+                style={{
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: 0,
+                  marginRight: 5,
+                  padding: 0,
+                  minWidth: 25,
+                  minHeight: 25,
+                }}>
+                {mode === ModeEnum.basic ? (
+                  <FontAwesomeIcon icon={faCloudDownload} color={!netInfo.isConnected ? 'red' : 'yellow'} size={20} />
+                ) : (
+                  <TouchableOpacity onPress={() => syncingStatusMoreInfoOnClick && syncingStatusMoreInfoOnClick()}>
+                    <FontAwesomeIcon icon={faCloudDownload} color={!netInfo.isConnected ? 'red' : 'yellow'} size={20} />
+                  </TouchableOpacity>
                 )}
-              </>
+              </View>
             )}
           </>
         )}

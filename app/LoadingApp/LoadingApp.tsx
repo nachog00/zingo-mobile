@@ -1626,7 +1626,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                           this.createNewWallet();
                         }
                       }}
-                      style={{ marginBottom: mode === ModeEnum.advanced ? 10 : 30, marginTop: 10 }}
+                      style={{ marginBottom: 10, marginTop: 10 }}
                     />
                   )}
 
