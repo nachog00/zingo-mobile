@@ -22,8 +22,18 @@ type MenuProps = {
 
 const Menu: React.FunctionComponent<MenuProps> = ({ onItemSelected, updateMenuState }) => {
   const context = useContext(ContextAppLoaded);
-  const { translate, readOnly, mode, valueTransfers, addLastSnackbar, security, language, rescanMenu, selectServer } =
-    context;
+  const {
+    translate,
+    readOnly,
+    mode,
+    valueTransfers,
+    addLastSnackbar,
+    security,
+    language,
+    rescanMenu,
+    selectServer,
+    netInfo,
+  } = context;
   const { colors } = useTheme() as unknown as ThemeType;
   moment.locale(language);
 
@@ -149,7 +159,7 @@ const Menu: React.FunctionComponent<MenuProps> = ({ onItemSelected, updateMenuSt
             </RegText>
           )}
 
-          {mode !== ModeEnum.basic && selectServer !== SelectServerEnum.offline && (
+          {mode !== ModeEnum.basic && netInfo.isConnected && selectServer !== SelectServerEnum.offline && (
             <RegText
               testID="menu.changewallet"
               onPress={() => onItemSelectedWrapper(MenuItemEnum.ChangeWallet)}
@@ -166,14 +176,18 @@ const Menu: React.FunctionComponent<MenuProps> = ({ onItemSelected, updateMenuSt
               {translate('loadedapp.restorebackupwallet') as string}
             </RegText>
           )}
-          {mode === ModeEnum.basic && valueTransfers && valueTransfers.length === 0 && (
-            <RegText
-              testID="menu.loadwalletfromseed"
-              onPress={() => onItemSelectedWrapper(MenuItemEnum.LoadWalletFromSeed)}
-              style={item}>
-              {translate('loadedapp.loadwalletfromseed-basic') as string}
-            </RegText>
-          )}
+          {mode === ModeEnum.basic &&
+            valueTransfers &&
+            valueTransfers.length === 0 &&
+            netInfo.isConnected &&
+            selectServer !== SelectServerEnum.offline && (
+              <RegText
+                testID="menu.loadwalletfromseed"
+                onPress={() => onItemSelectedWrapper(MenuItemEnum.LoadWalletFromSeed)}
+                style={item}>
+                {translate('loadedapp.loadwalletfromseed-basic') as string}
+              </RegText>
+            )}
           {mode === ModeEnum.basic && !readOnly && selectServer !== SelectServerEnum.offline && (
             <RegText
               testID="menu.tipzingolabs"

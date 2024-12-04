@@ -507,94 +507,84 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
 
     if (exists && exists !== GlobalConst.false) {
       this.setState({ walletExists: true });
-      const networkState = await NetInfo.fetch();
-      // if have internet connection or is in Offline mode
-      // can load the wallet.
-      if (networkState.isConnected || this.state.selectServer === SelectServerEnum.offline) {
-        let result: string = await RPCModule.loadExistingWallet(this.state.server.uri, this.state.server.chainName);
-        //let result = 'Error: pepe es guapo';
+      let result: string = await RPCModule.loadExistingWallet(this.state.server.uri, this.state.server.chainName);
+      //let result = 'Error: pepe es guapo';
 
-        // for testing
-        //await delay(5000);
+      // for testing
+      //await delay(5000);
 
-        console.log('Load Wallet Exists result', result);
-        let error = false;
-        let errorText = '';
-        if (result && !result.toLowerCase().startsWith(GlobalConst.error)) {
-          try {
-            // here result can have an `error` field for watch-only which is actually OK.
-            const resultJson: RPCSeedType = await JSON.parse(result);
-            if (!resultJson.error || (resultJson.error && resultJson.error.startsWith('This wallet is watch-only'))) {
-              // Load the wallet and navigate to the ValueTransfers screen
-              const walletKindStr: string = await RPCModule.execute(CommandEnum.walletKind, '');
-              //console.log(walletKindStr);
-              try {
-                const walletKindJSON: RPCWalletKindType = await JSON.parse(walletKindStr);
-                //console.log(walletKindJSON);
-                // there are 4 kinds:
-                // 1. seed
-                // 2. USK
-                // 3. UFVK - watch-only wallet
-                // 4. No keys - watch-only wallet (possibly an error)
+      console.log('Load Wallet Exists result', result);
+      let error = false;
+      let errorText = '';
+      if (result && !result.toLowerCase().startsWith(GlobalConst.error)) {
+        try {
+          // here result can have an `error` field for watch-only which is actually OK.
+          const resultJson: RPCSeedType = await JSON.parse(result);
+          if (!resultJson.error || (resultJson.error && resultJson.error.startsWith('This wallet is watch-only'))) {
+            // Load the wallet and navigate to the ValueTransfers screen
+            const walletKindStr: string = await RPCModule.execute(CommandEnum.walletKind, '');
+            //console.log(walletKindStr);
+            try {
+              const walletKindJSON: RPCWalletKindType = await JSON.parse(walletKindStr);
+              //console.log(walletKindJSON);
+              // there are 4 kinds:
+              // 1. seed
+              // 2. USK
+              // 3. UFVK - watch-only wallet
+              // 4. No keys - watch-only wallet (possibly an error)
 
-                let readOnly: boolean;
-                if (
-                  walletKindJSON.kind === RPCWalletKindEnum.LoadedFromUnifiedFullViewingKey ||
-                  walletKindJSON.kind === RPCWalletKindEnum.NoKeysFound
-                ) {
-                  readOnly = true;
-                } else {
-                  readOnly = false;
-                }
-                // if the seed & birthday are not stored in Keychain/Keystore, do it now.
-                if (this.state.recoveryWalletInfoOnDevice) {
-                  const wallet: WalletType = await RPC.rpcFetchWallet(readOnly);
-                  await createUpdateRecoveryWalletInfo(wallet);
-                } else {
-                  // needs to delete the seed from the Keychain/Keystore, do it now.
-                  if (this.state.hasRecoveryWalletInfoSaved) {
-                    await removeRecoveryWalletInfo();
-                  }
-                }
-                this.setState({
-                  readOnly: readOnly,
-                  actionButtonsDisabled: false,
-                });
-              } catch (e) {
-                //console.log(walletKindStr);
-                this.setState({
-                  readOnly: false,
-                  actionButtonsDisabled: false,
-                });
-                this.addLastSnackbar({ message: walletKindStr });
+              let readOnly: boolean;
+              if (
+                walletKindJSON.kind === RPCWalletKindEnum.LoadedFromUnifiedFullViewingKey ||
+                walletKindJSON.kind === RPCWalletKindEnum.NoKeysFound
+              ) {
+                readOnly = true;
+              } else {
+                readOnly = false;
               }
-              this.navigateToLoadedApp();
-              //console.log('navigate to LoadedApp');
-            } else {
-              error = true;
-              errorText = resultJson.error;
+              // if the seed & birthday are not stored in Keychain/Keystore, do it now.
+              if (this.state.recoveryWalletInfoOnDevice) {
+                const wallet: WalletType = await RPC.rpcFetchWallet(readOnly);
+                await createUpdateRecoveryWalletInfo(wallet);
+              } else {
+                // needs to delete the seed from the Keychain/Keystore, do it now.
+                if (this.state.hasRecoveryWalletInfoSaved) {
+                  await removeRecoveryWalletInfo();
+                }
+              }
+              this.setState({
+                readOnly: readOnly,
+                actionButtonsDisabled: false,
+              });
+            } catch (e) {
+              //console.log(walletKindStr);
+              this.setState({
+                readOnly: false,
+                actionButtonsDisabled: false,
+              });
+              this.addLastSnackbar({ message: walletKindStr });
             }
-          } catch (e) {
+            this.navigateToLoadedApp();
+            //console.log('navigate to LoadedApp');
+          } else {
             error = true;
-            errorText = JSON.stringify(e);
+            errorText = resultJson.error;
           }
-        } else {
+        } catch (e) {
           error = true;
-          errorText = result;
-        }
-        if (error) {
-          await this.walletErrorHandle(
-            errorText,
-            this.state.translate('loadingapp.readingwallet-label') as string,
-            1,
-            true,
-          );
+          errorText = JSON.stringify(e);
         }
       } else {
-        this.setState({ screen: 1, actionButtonsDisabled: false });
-        this.addLastSnackbar({
-          message: this.state.translate('loadedapp.connection-error') as string,
-        });
+        error = true;
+        errorText = result;
+      }
+      if (error) {
+        await this.walletErrorHandle(
+          errorText,
+          this.state.translate('loadingapp.readingwallet-label') as string,
+          1,
+          true,
+        );
       }
     } else {
       //console.log('Loading new wallet', this.state.screen, this.state.walletExists);
@@ -696,8 +686,6 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
               this.setState({
                 screen: screen === 3 ? 3 : screen !== 0 ? 1 : 0,
               });
-              // I need some time until the network is fully ready.
-              setTimeout(() => this.componentDidMount(), 1000);
             }
           }
         }
@@ -707,11 +695,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
     // if it is offline & there is no wallet file
     // the screen is going to be empty
     // show the custom server component
-    if (
-      this.state.netInfo.isConnected &&
-      this.state.selectServer === SelectServerEnum.offline &&
-      !this.state.walletExists
-    ) {
+    if (netInfoState.isConnected && this.state.selectServer === SelectServerEnum.offline && !this.state.walletExists) {
       this.setState({
         customServerShow: true,
       });
@@ -809,13 +793,15 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
   walletErrorHandle = async (result: string, title: string, screen: number, start: boolean) => {
     // first check the actual server
     // if the server is not working properly sometimes can take more than one minute to fail.
-    if (start && this.state.selectServer !== SelectServerEnum.offline) {
+    if (start && this.state.netInfo.isConnected && this.state.selectServer !== SelectServerEnum.offline) {
       this.addLastSnackbar({
         message: this.state.translate('restarting') as string,
         duration: SnackbarDurationEnum.long,
       });
     }
-    if (this.state.selectServer === SelectServerEnum.offline) {
+    // if no internet connection -> show the error.
+    // if Offline mode -> show the error.
+    if (!this.state.netInfo.isConnected || this.state.selectServer === SelectServerEnum.offline) {
       createAlert(
         this.setBackgroundError,
         this.addLastSnackbar,
@@ -1382,7 +1368,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     )}
                   </>
                 )}
-                {!netInfo.isConnected && hasRecoveryWalletInfoSaved && (
+                {!netInfo.isConnected && hasRecoveryWalletInfoSaved && !actionButtonsDisabled && (
                   <OptionsMenu
                     customButton={<FontAwesomeIcon icon={faEllipsisV} color={'#ffffff'} size={40} />}
                     buttonStyle={{ width: 40, padding: 10, resizeMode: 'contain' }}
@@ -1418,7 +1404,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     />
                   </View>
 
-                  {netInfo.isConnected && selectServer !== SelectServerEnum.offline && (
+                  {selectServer !== SelectServerEnum.offline && (
                     <>
                       <BoldText style={{ fontSize: 15, marginBottom: 3 }}>
                         {`${translate('loadingapp.actualserver') as string} [${
@@ -1576,30 +1562,45 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     </>
                   )}
 
-                  {netInfo.isConnected && walletExists && (
-                    <View
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'flex-end',
-                        marginHorizontal: 20,
-                        marginBottom: 20,
-                      }}>
+                  {walletExists && (
+                    <>
                       <View
                         style={{
                           display: 'flex',
-                          flexDirection: 'column',
-                          marginTop: 10,
-                          borderColor: colors.primary,
-                          borderWidth: 1,
-                          borderRadius: 5,
-                          padding: 5,
+                          flexDirection: 'row',
+                          alignItems: 'flex-end',
+                          marginHorizontal: 20,
+                          marginBottom: 20,
                         }}>
-                        <BoldText style={{ fontSize: 15, color: colors.primaryDisabled }}>
-                          {translate('loadingapp.noopenwallet-message') as string}
-                        </BoldText>
+                        <View
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            marginTop: 10,
+                            borderColor: colors.primary,
+                            borderWidth: 1,
+                            borderRadius: 5,
+                            padding: 5,
+                          }}>
+                          <BoldText style={{ fontSize: 15, color: colors.primaryDisabled }}>
+                            {translate('loadingapp.noopenwallet-message') as string}
+                          </BoldText>
+                        </View>
                       </View>
-                    </View>
+                      <Button
+                        type={ButtonTypeEnum.Primary}
+                        title={translate('loadingapp.opencurrentwallet') as string}
+                        disabled={actionButtonsDisabled}
+                        onPress={() => {
+                          // to avoid the biometric security
+                          this.setState({
+                            startingApp: false,
+                          });
+                          this.componentDidMount();
+                        }}
+                        style={{ marginBottom: 20 }}
+                      />
+                    </>
                   )}
 
                   {netInfo.isConnected && selectServer !== SelectServerEnum.offline && (
@@ -1630,24 +1631,8 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     />
                   )}
 
-                  {netInfo.isConnected && walletExists && (
-                    <Button
-                      type={ButtonTypeEnum.Primary}
-                      title={translate('loadingapp.opencurrentwallet') as string}
-                      disabled={actionButtonsDisabled}
-                      onPress={() => {
-                        // to avoid the biometric security
-                        this.setState({
-                          startingApp: false,
-                        });
-                        this.componentDidMount();
-                      }}
-                      style={{ marginBottom: 10 }}
-                    />
-                  )}
-
                   {netInfo.isConnected && selectServer !== SelectServerEnum.offline && (
-                    <View style={{ marginTop: 20, display: 'flex', alignItems: 'center' }}>
+                    <View style={{ marginTop: 10, display: 'flex', alignItems: 'center' }}>
                       <Button
                         testID="loadingapp.restorewalletseedufvk"
                         type={ButtonTypeEnum.Secondary}
@@ -1659,7 +1644,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     </View>
                   )}
 
-                  {!netInfo.isConnected && selectServer !== SelectServerEnum.offline && (
+                  {false && (
                     <View
                       style={{
                         display: 'flex',
@@ -1684,7 +1669,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     </View>
                   )}
 
-                  {netInfo.isConnected && actionButtonsDisabled && (
+                  {actionButtonsDisabled && (
                     <ActivityIndicator size="large" color={colors.primary} style={{ marginVertical: 20 }} />
                   )}
                 </View>
