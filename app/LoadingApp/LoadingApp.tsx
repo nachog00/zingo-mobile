@@ -1651,7 +1651,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     </View>
                   )}
 
-                  {!netInfo.isConnected && mode === ModeEnum.basic && (
+                  {(!netInfo.isConnected || selectServer === SelectServerEnum.offline) && !walletExists && (
                     <View
                       style={{
                         display: 'flex',
