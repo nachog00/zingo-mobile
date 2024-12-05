@@ -605,10 +605,18 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
         } else {
           // if no wallet file & basic mode -> create a new wallet & go directly to history screen.
           // no seed screen.
-          this.createNewWallet(false);
-          this.setState({ actionButtonsDisabled: false });
-          this.navigateToLoadedApp();
-          //console.log('navigate to LoadedApp');
+          if (!netInfoState.isConnected || this.state.selectServer === SelectServerEnum.offline) {
+            this.setState({
+              screen: 1,
+              walletExists: false,
+              actionButtonsDisabled: false,
+            });
+          } else {
+            this.createNewWallet(false);
+            this.setState({ actionButtonsDisabled: false });
+            this.navigateToLoadedApp();
+            //console.log('navigate to LoadedApp');
+          }
         }
       } else {
         // if no wallet file & advanced mode -> go to the initial menu.
@@ -1643,7 +1651,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     </View>
                   )}
 
-                  {false && (
+                  {!netInfo.isConnected && mode === ModeEnum.basic && (
                     <View
                       style={{
                         display: 'flex',
