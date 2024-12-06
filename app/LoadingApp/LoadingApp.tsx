@@ -513,7 +513,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
       // for testing
       //await delay(5000);
 
-      console.log('Load Wallet Exists result', result);
+      //console.log('Load Wallet Exists result', result);
       let error = false;
       let errorText = '';
       if (result && !result.toLowerCase().startsWith(GlobalConst.error)) {
@@ -630,13 +630,15 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
     }
 
     this.appstate = AppState.addEventListener(EventListenerEnum.change, async nextAppState => {
-      //console.log('LOADING', 'next', nextAppState, 'prior', this.state.appState);
+      //console.log('LOADING', 'prior', this.state.appStateStatus, 'next', nextAppState);
+      // let's catch the prior value
+      const priorAppState = this.state.appStateStatus;
+      this.setState({ appStateStatus: nextAppState });
       if (
-        (this.state.appStateStatus === AppStateStatusEnum.inactive ||
-          this.state.appStateStatus === AppStateStatusEnum.background) &&
+        (priorAppState === AppStateStatusEnum.inactive || priorAppState === AppStateStatusEnum.background) &&
         nextAppState === AppStateStatusEnum.active
       ) {
-        //console.log('App LOADING has come to the foreground!');
+        console.log('App LOADING has come to the foreground!');
         // reading background task info
         this.fetchBackgroundSyncing();
         // setting value for background task Android
@@ -648,13 +650,12 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
       }
       if (
         (nextAppState === AppStateStatusEnum.inactive || nextAppState === AppStateStatusEnum.background) &&
-        this.state.appStateStatus === AppStateStatusEnum.active
+        priorAppState === AppStateStatusEnum.active
       ) {
-        //console.log('App LOADING is gone to the background!');
+        console.log('App LOADING is gone to the background!');
         // setting value for background task Android
         await AsyncStorage.setItem(GlobalConst.background, GlobalConst.yes);
       }
-      this.setState({ appStateStatus: nextAppState });
     });
 
     this.unsubscribeNetInfo = NetInfo.addEventListener(state => {

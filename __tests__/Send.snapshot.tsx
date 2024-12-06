@@ -100,6 +100,8 @@ describe('Component Send - test', () => {
           setScrollToTop={onFunction}
           setScrollToBottom={onFunction}
           setServerOption={onFunction}
+          clearTimers={onFunction}
+          configure={onFunction}
         />
       </ContextAppLoadedProvider>,
     );
@@ -130,6 +132,8 @@ describe('Component Send - test', () => {
           setScrollToTop={onFunction}
           setScrollToBottom={onFunction}
           setServerOption={onFunction}
+          clearTimers={onFunction}
+          configure={onFunction}
         />
       </ContextAppLoadedProvider>,
     );

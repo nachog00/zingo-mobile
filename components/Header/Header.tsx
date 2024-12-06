@@ -516,7 +516,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
                       </TouchableOpacity>
                     </View>
                   )}
-                {syncingStatus.inProgress && (
+                {syncingStatus.inProgress && blocksRemaining > 0 && (
                   <View
                     style={{
                       alignItems: 'center',

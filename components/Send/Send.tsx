@@ -84,6 +84,8 @@ type SendProps = {
     toast: boolean,
     sameServerChainName: boolean,
   ) => Promise<void>;
+  clearTimers: () => Promise<void>;
+  configure: () => Promise<void>;
 };
 
 const Send: React.FunctionComponent<SendProps> = ({
@@ -101,6 +103,8 @@ const Send: React.FunctionComponent<SendProps> = ({
   setScrollToTop,
   setScrollToBottom,
   setServerOption,
+  clearTimers,
+  configure,
 }) => {
   const context = useContext(ContextAppLoaded);
   const {
@@ -716,6 +720,8 @@ const Send: React.FunctionComponent<SendProps> = ({
       addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
       return;
     }
+    // clear first all interval tasks
+    await clearTimers();
     // first interrupt syncing Just in case...
     await RPC.rpcSetInterruptSyncAfterBatch(GlobalConst.true);
     // First, close the confirm modal and show the "computing" modal
@@ -732,9 +738,13 @@ const Send: React.FunctionComponent<SendProps> = ({
 
     // call the sendTransaction method in a timeout, allowing the modals to show properly
     setTimeout(async () => {
+      let error = '';
+      let customError: string | undefined;
       try {
         const txid = await sendTransaction(setLocalSendProgress);
 
+        // create all interval tasks
+        await configure();
         // Clear the fields
         clearToAddr();
 
@@ -757,16 +767,16 @@ const Send: React.FunctionComponent<SendProps> = ({
         setComputingModalVisible(false);
         // the app send successfully on the first attemp.
         return;
-      } catch (err) {
-        let error = err as string;
+      } catch (err1) {
+        error = err1 as string;
 
-        let customError = interceptCustomError(error);
+        customError = interceptCustomError(error);
 
         // in this point the App is failing, there is two possibilities:
         // 1. Server Error
         // 2. Another type of Error
         // here is worth it to try again with the best working server...
-        // if the user salected a `custom` server, then we cannot change it.
+        // if the user selected a `custom` server, then we cannot change it.
         if (!customError && selectServer !== SelectServerEnum.custom) {
           // try send again with a working server
           const serverChecked = await selectingServer(serverUris(translate).filter((s: ServerUrisType) => !s.obsolete));
@@ -790,6 +800,8 @@ const Send: React.FunctionComponent<SendProps> = ({
           try {
             const txid = await sendTransaction(setLocalSendProgress);
 
+            // create all interval tasks
+            await configure();
             // Clear the fields
             clearToAddr();
 
@@ -818,24 +830,26 @@ const Send: React.FunctionComponent<SendProps> = ({
             customError = interceptCustomError(error);
           }
         }
-
-        setTimeout(() => {
-          //console.log('sendtx error', error);
-          // if the App is in background I need to store the error
-          // and when the App come back to foreground shows it to the user.
-          createAlert(
-            setBackgroundError,
-            addLastSnackbar,
-            translate('send.sending-error') as string,
-            `${customError ? customError : error}`,
-            false,
-            translate,
-            sendEmail,
-            info.zingolib,
-          );
-        }, 1000);
-        setComputingModalVisible(false);
       }
+      // create all interval tasks
+      await configure();
+
+      setTimeout(() => {
+        //console.log('sendtx error', error);
+        // if the App is in background I need to store the error
+        // and when the App come back to foreground shows it to the user.
+        createAlert(
+          setBackgroundError,
+          addLastSnackbar,
+          translate('send.sending-error') as string,
+          `${customError ? customError : error}`,
+          false,
+          translate,
+          sendEmail,
+          info.zingolib,
+        );
+      }, 1000);
+      setComputingModalVisible(false);
     });
   };
 

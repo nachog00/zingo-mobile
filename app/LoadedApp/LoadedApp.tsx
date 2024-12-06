@@ -488,21 +488,21 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
     await this.rpc.configure();
 
     this.appstate = AppState.addEventListener(EventListenerEnum.change, async nextAppState => {
-      //console.log('LOADED', 'prior', this.state.appState, 'next', nextAppState);
+      //console.log('LOADED', 'prior', this.state.appStateStatus, 'next', nextAppState);
+      // let's catch the prior value
+      const priorAppState = this.state.appStateStatus;
       if (Platform.OS === GlobalConst.platformOSios) {
         if (
-          (this.state.appStateStatus === AppStateStatusEnum.inactive && nextAppState === AppStateStatusEnum.active) ||
-          (this.state.appStateStatus === AppStateStatusEnum.active && nextAppState === AppStateStatusEnum.inactive)
+          (priorAppState === AppStateStatusEnum.inactive && nextAppState === AppStateStatusEnum.active) ||
+          (priorAppState === AppStateStatusEnum.active && nextAppState === AppStateStatusEnum.inactive)
         ) {
           //console.log('LOADED SAVED IOS do nothing', nextAppState);
           this.setState({ appStateStatus: nextAppState });
           return;
         }
-        if (
-          this.state.appStateStatus === AppStateStatusEnum.inactive &&
-          nextAppState === AppStateStatusEnum.background
-        ) {
+        if (priorAppState === AppStateStatusEnum.inactive && nextAppState === AppStateStatusEnum.background) {
           //console.log('App LOADED IOS is gone to the background!');
+          this.setState({ appStateStatus: nextAppState });
           // re-activate the interruption sync flag
           await RPC.rpcSetInterruptSyncAfterBatch(GlobalConst.true);
           // setting value for background task Android
@@ -517,13 +517,17 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
           // We need to save the wallet file here because
           // sometimes the App can lose the last synced chunk
           await RPCModule.doSave();
-          this.setState({ appStateStatus: nextAppState });
           return;
         }
       }
+      if (Platform.OS === GlobalConst.platformOSandroid) {
+        if (priorAppState !== nextAppState) {
+          console.log('LOADED SAVED Android', nextAppState);
+          this.setState({ appStateStatus: nextAppState });
+        }
+      }
       if (
-        (this.state.appStateStatus === AppStateStatusEnum.inactive ||
-          this.state.appStateStatus === AppStateStatusEnum.background) &&
+        (priorAppState === AppStateStatusEnum.inactive || priorAppState === AppStateStatusEnum.background) &&
         nextAppState === AppStateStatusEnum.active
       ) {
         //console.log('App LOADED Android & IOS has come to the foreground!');
@@ -556,7 +560,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
           }
         }
       } else if (
-        this.state.appStateStatus === AppStateStatusEnum.active &&
+        priorAppState === AppStateStatusEnum.active &&
         (nextAppState === AppStateStatusEnum.inactive || nextAppState === AppStateStatusEnum.background)
       ) {
         //console.log('App LOADED is gone to the background!');
@@ -579,16 +583,10 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
         }
       } else {
         if (Platform.OS === GlobalConst.platformOSios) {
-          if (this.state.appStateStatus !== nextAppState) {
+          if (priorAppState !== nextAppState) {
             //console.log('LOADED SAVED IOS', nextAppState);
             this.setState({ appStateStatus: nextAppState });
           }
-        }
-      }
-      if (Platform.OS === GlobalConst.platformOSandroid) {
-        if (this.state.appStateStatus !== nextAppState) {
-          //console.log('LOADED SAVED Android', nextAppState);
-          this.setState({ appStateStatus: nextAppState });
         }
       }
     });
@@ -1402,6 +1400,14 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
     });
   };
 
+  clearTimers = async () => {
+    await this.rpc.clearTimers();
+  };
+
+  configure = async () => {
+    await this.rpc.configure();
+  };
+
   onClickOKChangeWallet = async (state: any) => {
     const { server } = this.state;
 
@@ -2041,6 +2047,8 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
                         setScrollToTop={this.setScrollToTop}
                         setScrollToBottom={this.setScrollToBottom}
                         setServerOption={this.setServerOption}
+                        clearTimers={this.clearTimers}
+                        configure={this.configure}
                       />
                     )}
                   </Tab.Screen>
