@@ -368,7 +368,12 @@ const Settings: React.FunctionComponent<SettingsProps> = ({
     }
 
     if (serverContext.uri !== serverUriParsed || serverContext.chainName !== chainNameParsed) {
-      if (!netInfo.isConnected) {
+      // if the user is changing -> to Offline mode.
+      // doesn't matter is the device have or not internet connection.
+      if (
+        !netInfo.isConnected &&
+        !(selectServerContext !== SelectServerEnum.offline && selectServer === SelectServerEnum.offline)
+      ) {
         addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
         return;
       }
