@@ -12,7 +12,7 @@ COPY zingomobile_utils/ /opt/zingo/rust/zingomobile_utils/
 
 RUN rustup default nightly
 
-RUN cargo install --force --locked bindgen-cli --version 0.70.1
+RUN cargo install --force --locked bindgen-cli
 
 RUN cargo run --release --features=uniffi/cli --bin uniffi-bindgen \
     generate ./src/zingo.udl --language kotlin \ 

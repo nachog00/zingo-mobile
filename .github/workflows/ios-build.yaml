@@ -72,7 +72,7 @@ jobs:
           sudo rustup default nightly
 
       - name: AWS libcrypto rust building
-        run: sudo cargo install --force --locked bindgen-cli --version 0.70.1
+        run: sudo cargo install --force --locked bindgen-cli
 
       - name: rustup show
         run: sudo rustup show
