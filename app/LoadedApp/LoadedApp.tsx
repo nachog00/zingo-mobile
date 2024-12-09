@@ -1209,7 +1209,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
           ) {
             // Load the wallet and navigate to the ValueTransfers screen
             //console.log(`wallet loaded ok ${value.uri}`);
-            if (toast) {
+            if (toast && selectServer !== SelectServerEnum.offline) {
               this.addLastSnackbar({
                 message: `${this.state.translate('loadedapp.readingwallet')} ${value.uri}`,
               });
