@@ -13,7 +13,7 @@ import moment from 'moment';
 import 'moment/locale/es';
 import 'moment/locale/pt';
 import 'moment/locale/ru';
-import { GlobalConst, MenuItemEnum, ModeEnum } from '../../AppState';
+import { GlobalConst, MenuItemEnum, ModeEnum, SelectServerEnum } from '../../AppState';
 
 type MenuProps = {
   onItemSelected: (item: MenuItemEnum) => Promise<void>;
@@ -22,7 +22,18 @@ type MenuProps = {
 
 const Menu: React.FunctionComponent<MenuProps> = ({ onItemSelected, updateMenuState }) => {
   const context = useContext(ContextAppLoaded);
-  const { translate, readOnly, mode, valueTransfers, addLastSnackbar, security, language, rescanMenu } = context;
+  const {
+    translate,
+    readOnly,
+    mode,
+    valueTransfers,
+    addLastSnackbar,
+    security,
+    language,
+    rescanMenu,
+    selectServer,
+    netInfo,
+  } = context;
   const { colors } = useTheme() as unknown as ThemeType;
   moment.locale(language);
 
@@ -89,7 +100,7 @@ const Menu: React.FunctionComponent<MenuProps> = ({ onItemSelected, updateMenuSt
             {translate('loadedapp.about') as string}
           </RegText>
 
-          {mode !== ModeEnum.basic && (
+          {mode !== ModeEnum.basic && selectServer !== SelectServerEnum.offline && (
             <RegText testID="menu.info" onPress={() => onItemSelectedWrapper(MenuItemEnum.Info)} style={item}>
               {translate('loadedapp.info') as string}
             </RegText>
@@ -121,13 +132,13 @@ const Menu: React.FunctionComponent<MenuProps> = ({ onItemSelected, updateMenuSt
             </RegText>
           )}
 
-          {mode !== ModeEnum.basic && rescanMenu && (
+          {mode !== ModeEnum.basic && rescanMenu && selectServer !== SelectServerEnum.offline && (
             <RegText testID="menu.rescan" onPress={() => onItemSelectedWrapper(MenuItemEnum.Rescan)} style={item}>
               {translate('loadedapp.rescanwallet') as string}
             </RegText>
           )}
 
-          {mode !== ModeEnum.basic && (
+          {mode !== ModeEnum.basic && selectServer !== SelectServerEnum.offline && (
             <RegText
               testID="menu.syncreport"
               onPress={() => onItemSelectedWrapper(MenuItemEnum.SyncReport)}
@@ -148,7 +159,7 @@ const Menu: React.FunctionComponent<MenuProps> = ({ onItemSelected, updateMenuSt
             </RegText>
           )}
 
-          {mode !== ModeEnum.basic && (
+          {mode !== ModeEnum.basic && netInfo.isConnected && selectServer !== SelectServerEnum.offline && (
             <RegText
               testID="menu.changewallet"
               onPress={() => onItemSelectedWrapper(MenuItemEnum.ChangeWallet)}
@@ -165,15 +176,19 @@ const Menu: React.FunctionComponent<MenuProps> = ({ onItemSelected, updateMenuSt
               {translate('loadedapp.restorebackupwallet') as string}
             </RegText>
           )}
-          {mode === ModeEnum.basic && valueTransfers && valueTransfers.length === 0 && (
-            <RegText
-              testID="menu.loadwalletfromseed"
-              onPress={() => onItemSelectedWrapper(MenuItemEnum.LoadWalletFromSeed)}
-              style={item}>
-              {translate('loadedapp.loadwalletfromseed-basic') as string}
-            </RegText>
-          )}
-          {mode === ModeEnum.basic && !readOnly && (
+          {mode === ModeEnum.basic &&
+            valueTransfers &&
+            valueTransfers.length === 0 &&
+            netInfo.isConnected &&
+            selectServer !== SelectServerEnum.offline && (
+              <RegText
+                testID="menu.loadwalletfromseed"
+                onPress={() => onItemSelectedWrapper(MenuItemEnum.LoadWalletFromSeed)}
+                style={item}>
+                {translate('loadedapp.loadwalletfromseed-basic') as string}
+              </RegText>
+            )}
+          {mode === ModeEnum.basic && !readOnly && selectServer !== SelectServerEnum.offline && (
             <RegText
               testID="menu.tipzingolabs"
               onPress={() => onItemSelectedWrapper(MenuItemEnum.TipZingoLabs)}
@@ -181,7 +196,7 @@ const Menu: React.FunctionComponent<MenuProps> = ({ onItemSelected, updateMenuSt
               {translate('loadedapp.tipzingolabs-basic') as string}
             </RegText>
           )}
-          {mode !== ModeEnum.basic && !readOnly && (
+          {mode !== ModeEnum.basic && !readOnly && selectServer !== SelectServerEnum.offline && (
             <RegText
               testID="menu.votefornym"
               onPress={() => onItemSelectedWrapper(MenuItemEnum.VoteForNym)}

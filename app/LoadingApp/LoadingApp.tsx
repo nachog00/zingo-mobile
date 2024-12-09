@@ -14,6 +14,7 @@ import {
   NativeEventSubscription,
   TextInput,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
 import { useTheme } from '@react-navigation/native';
@@ -25,7 +26,7 @@ import NetInfo, { NetInfoStateType, NetInfoSubscription } from '@react-native-co
 import OptionsMenu from 'react-native-option-menu';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
+import { faEllipsisV, faWifi } from '@fortawesome/free-solid-svg-icons';
 
 import RPCModule from '../RPCModule';
 import {
@@ -90,6 +91,7 @@ import ImportUfvk from '../../components/Ufvk/ImportUfvk';
 import ChainTypeToggle from '../../components/Components/ChainTypeToggle';
 import { sendEmail } from '../sendEmail';
 import { RPCWalletKindEnum } from '../rpc/enums/RPCWalletKindEnum';
+import FadeText from '../../components/Components/FadeText';
 
 const en = require('../translations/en.json');
 const es = require('../translations/es.json');
@@ -252,7 +254,8 @@ export default function LoadingApp(props: LoadingAppProps) {
       if (
         settings.selectServer === SelectServerEnum.auto ||
         settings.selectServer === SelectServerEnum.custom ||
-        settings.selectServer === SelectServerEnum.list
+        settings.selectServer === SelectServerEnum.list ||
+        settings.selectServer === SelectServerEnum.offline
       ) {
         setSelectServer(settings.selectServer);
       } else {
@@ -389,6 +392,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
       customServerShow: false,
       customServerUri: '',
       customServerChainName: ChainNameEnum.mainChainName,
+      customServerOffline: false,
       biometricsFailed:
         !!props.route.params &&
         (props.route.params.biometricsFailed === true || props.route.params.biometricsFailed === false)
@@ -417,7 +421,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
         type: netInfoState.type,
         isConnectionExpensive: netInfoState.details && netInfoState.details.isConnectionExpensive,
       },
-      actionButtonsDisabled: !netInfoState.isConnected ? true : false,
+      //actionButtonsDisabled: !netInfoState.isConnected ? true : false,
     });
 
     //console.log('DID MOUNT APPLOADING...', netInfoState);
@@ -503,91 +507,84 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
 
     if (exists && exists !== GlobalConst.false) {
       this.setState({ walletExists: true });
-      const networkState = await NetInfo.fetch();
-      if (networkState.isConnected) {
-        let result: string = await RPCModule.loadExistingWallet(this.state.server.uri, this.state.server.chainName);
+      let result: string = await RPCModule.loadExistingWallet(this.state.server.uri, this.state.server.chainName);
+      //let result = 'Error: pepe es guapo';
 
-        // for testing
-        //await delay(5000);
+      // for testing
+      //await delay(5000);
 
-        //console.log('Load Wallet Exists result', result);
-        let error = false;
-        let errorText = '';
-        if (result && !result.toLowerCase().startsWith(GlobalConst.error)) {
-          try {
-            // here result can have an `error` field for watch-only which is actually OK.
-            const resultJson: RPCSeedType = await JSON.parse(result);
-            if (!resultJson.error || (resultJson.error && resultJson.error.startsWith('This wallet is watch-only'))) {
-              // Load the wallet and navigate to the ValueTransfers screen
-              const walletKindStr: string = await RPCModule.execute(CommandEnum.walletKind, '');
-              //console.log(walletKindStr);
-              try {
-                const walletKindJSON: RPCWalletKindType = await JSON.parse(walletKindStr);
-                //console.log(walletKindJSON);
-                // there are 4 kinds:
-                // 1. seed
-                // 2. USK
-                // 3. UFVK - watch-only wallet
-                // 4. No keys - watch-only wallet (possibly an error)
+      //console.log('Load Wallet Exists result', result);
+      let error = false;
+      let errorText = '';
+      if (result && !result.toLowerCase().startsWith(GlobalConst.error)) {
+        try {
+          // here result can have an `error` field for watch-only which is actually OK.
+          const resultJson: RPCSeedType = await JSON.parse(result);
+          if (!resultJson.error || (resultJson.error && resultJson.error.startsWith('This wallet is watch-only'))) {
+            // Load the wallet and navigate to the ValueTransfers screen
+            const walletKindStr: string = await RPCModule.execute(CommandEnum.walletKind, '');
+            //console.log(walletKindStr);
+            try {
+              const walletKindJSON: RPCWalletKindType = await JSON.parse(walletKindStr);
+              //console.log(walletKindJSON);
+              // there are 4 kinds:
+              // 1. seed
+              // 2. USK
+              // 3. UFVK - watch-only wallet
+              // 4. No keys - watch-only wallet (possibly an error)
 
-                let readOnly: boolean;
-                if (
-                  walletKindJSON.kind === RPCWalletKindEnum.LoadedFromUnifiedFullViewingKey ||
-                  walletKindJSON.kind === RPCWalletKindEnum.NoKeysFound
-                ) {
-                  readOnly = true;
-                } else {
-                  readOnly = false;
-                }
-                // if the seed & birthday are not stored in Keychain/Keystore, do it now.
-                if (this.state.recoveryWalletInfoOnDevice) {
-                  const wallet: WalletType = await RPC.rpcFetchWallet(readOnly);
-                  await createUpdateRecoveryWalletInfo(wallet);
-                } else {
-                  // needs to delete the seed from the Keychain/Keystore, do it now.
-                  if (this.state.hasRecoveryWalletInfoSaved) {
-                    await removeRecoveryWalletInfo();
-                  }
-                }
-                this.setState({
-                  readOnly: readOnly,
-                  actionButtonsDisabled: false,
-                });
-              } catch (e) {
-                //console.log(walletKindStr);
-                this.setState({
-                  readOnly: false,
-                  actionButtonsDisabled: false,
-                });
-                this.addLastSnackbar({ message: walletKindStr });
+              let readOnly: boolean;
+              if (
+                walletKindJSON.kind === RPCWalletKindEnum.LoadedFromUnifiedFullViewingKey ||
+                walletKindJSON.kind === RPCWalletKindEnum.NoKeysFound
+              ) {
+                readOnly = true;
+              } else {
+                readOnly = false;
               }
-              this.navigateToLoadedApp();
-              //console.log('navigate to LoadedApp');
-            } else {
-              error = true;
-              errorText = resultJson.error;
+              // if the seed & birthday are not stored in Keychain/Keystore, do it now.
+              if (this.state.recoveryWalletInfoOnDevice) {
+                const wallet: WalletType = await RPC.rpcFetchWallet(readOnly);
+                await createUpdateRecoveryWalletInfo(wallet);
+              } else {
+                // needs to delete the seed from the Keychain/Keystore, do it now.
+                if (this.state.hasRecoveryWalletInfoSaved) {
+                  await removeRecoveryWalletInfo();
+                }
+              }
+              this.setState({
+                readOnly: readOnly,
+                actionButtonsDisabled: false,
+              });
+            } catch (e) {
+              //console.log(walletKindStr);
+              this.setState({
+                readOnly: false,
+                actionButtonsDisabled: false,
+              });
+              this.addLastSnackbar({ message: walletKindStr });
             }
-          } catch (e) {
+            this.navigateToLoadedApp();
+            //console.log('navigate to LoadedApp');
+          } else {
             error = true;
-            errorText = JSON.stringify(e);
+            errorText = resultJson.error;
           }
-        } else {
+        } catch (e) {
           error = true;
-          errorText = result;
-        }
-        if (error) {
-          await this.walletErrorHandle(
-            errorText,
-            this.state.translate('loadingapp.readingwallet-label') as string,
-            1,
-            true,
-          );
+          errorText = JSON.stringify(e);
         }
       } else {
-        this.setState({ screen: 1, actionButtonsDisabled: false });
-        this.addLastSnackbar({
-          message: this.state.translate('loadedapp.connection-error') as string,
-        });
+        error = true;
+        errorText = result;
+      }
+      if (error) {
+        await this.walletErrorHandle(
+          errorText,
+          this.state.translate('loadingapp.readingwallet-label') as string,
+          1,
+          true,
+        );
       }
     } else {
       //console.log('Loading new wallet', this.state.screen, this.state.walletExists);
@@ -608,10 +605,18 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
         } else {
           // if no wallet file & basic mode -> create a new wallet & go directly to history screen.
           // no seed screen.
-          this.createNewWallet(false);
-          this.setState({ actionButtonsDisabled: false });
-          this.navigateToLoadedApp();
-          //console.log('navigate to LoadedApp');
+          if (!netInfoState.isConnected || this.state.selectServer === SelectServerEnum.offline) {
+            this.setState({
+              screen: 1,
+              walletExists: false,
+              actionButtonsDisabled: false,
+            });
+          } else {
+            this.createNewWallet(false);
+            this.setState({ actionButtonsDisabled: false });
+            this.navigateToLoadedApp();
+            //console.log('navigate to LoadedApp');
+          }
         }
       } else {
         // if no wallet file & advanced mode -> go to the initial menu.
@@ -625,13 +630,15 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
     }
 
     this.appstate = AppState.addEventListener(EventListenerEnum.change, async nextAppState => {
-      //console.log('LOADING', 'next', nextAppState, 'prior', this.state.appState);
+      //console.log('LOADING', 'prior', this.state.appStateStatus, 'next', nextAppState);
+      // let's catch the prior value
+      const priorAppState = this.state.appStateStatus;
+      this.setState({ appStateStatus: nextAppState });
       if (
-        (this.state.appStateStatus === AppStateStatusEnum.inactive ||
-          this.state.appStateStatus === AppStateStatusEnum.background) &&
+        (priorAppState === AppStateStatusEnum.inactive || priorAppState === AppStateStatusEnum.background) &&
         nextAppState === AppStateStatusEnum.active
       ) {
-        //console.log('App LOADING has come to the foreground!');
+        console.log('App LOADING has come to the foreground!');
         // reading background task info
         this.fetchBackgroundSyncing();
         // setting value for background task Android
@@ -643,13 +650,12 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
       }
       if (
         (nextAppState === AppStateStatusEnum.inactive || nextAppState === AppStateStatusEnum.background) &&
-        this.state.appStateStatus === AppStateStatusEnum.active
+        priorAppState === AppStateStatusEnum.active
       ) {
-        //console.log('App LOADING is gone to the background!');
+        console.log('App LOADING is gone to the background!');
         // setting value for background task Android
         await AsyncStorage.setItem(GlobalConst.background, GlobalConst.yes);
       }
-      this.setState({ appStateStatus: nextAppState });
     });
 
     this.unsubscribeNetInfo = NetInfo.addEventListener(state => {
@@ -667,25 +673,42 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
             isConnectionExpensive: state.details && state.details.isConnectionExpensive,
           },
           screen: screen === 3 ? 3 : screen !== 0 ? 1 : 0,
-          actionButtonsDisabled: true,
+          //actionButtonsDisabled: true,
         });
         if (isConnected !== state.isConnected) {
           if (!state.isConnected) {
             //console.log('EVENT Loading: No internet connection.');
-            this.addLastSnackbar({
-              message: this.state.translate('loadedapp.connection-error') as string,
+            this.setState({
+              customServerShow: false,
             });
           } else {
             //console.log('EVENT Loading: YESSSSS internet connection.');
+            // if it is offline & there is no wallet file
+            // the screen is going to be empty
+            // show the custom server component
+            if (this.state.selectServer === SelectServerEnum.offline && !this.state.walletExists) {
+              this.setState({
+                customServerShow: true,
+              });
+            }
             if (screen !== 0) {
-              this.setState({ screen: screen === 3 ? 3 : screen !== 0 ? 1 : 0 });
-              // I need some time until the network is fully ready.
-              setTimeout(() => this.componentDidMount(), 1000);
+              this.setState({
+                screen: screen === 3 ? 3 : screen !== 0 ? 1 : 0,
+              });
             }
           }
         }
       }
     });
+
+    // if it is offline & there is no wallet file
+    // the screen is going to be empty
+    // show the custom server component
+    if (netInfoState.isConnected && this.state.selectServer === SelectServerEnum.offline && !this.state.walletExists) {
+      this.setState({
+        customServerShow: true,
+      });
+    }
   };
 
   componentWillUnmount = () => {
@@ -779,15 +802,15 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
   walletErrorHandle = async (result: string, title: string, screen: number, start: boolean) => {
     // first check the actual server
     // if the server is not working properly sometimes can take more than one minute to fail.
-    if (start) {
+    if (start && this.state.netInfo.isConnected && this.state.selectServer !== SelectServerEnum.offline) {
       this.addLastSnackbar({
         message: this.state.translate('restarting') as string,
         duration: SnackbarDurationEnum.long,
       });
     }
-    const workingServer = await this.checkServer(this.state.server);
-    if (workingServer) {
-      // the server is working -> this error is something not related with the server availability
+    // if no internet connection -> show the error.
+    // if Offline mode -> show the error.
+    if (!this.state.netInfo.isConnected || this.state.selectServer === SelectServerEnum.offline) {
       createAlert(
         this.setBackgroundError,
         this.addLastSnackbar,
@@ -800,25 +823,72 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
       );
       this.setState({ actionButtonsDisabled: false, serverErrorTries: 0, screen });
     } else {
-      // let's change to another server
-      if (this.state.serverErrorTries === 0) {
-        // first try
-        this.setState({ screen, actionButtonsDisabled: true });
-        this.addLastSnackbar({
-          message: this.state.translate('loadingapp.serverfirsttry') as string,
-          duration: SnackbarDurationEnum.longer,
-        });
-        // a different server.
-        const someServerIsWorking = await this.selectTheBestServer(true);
-        if (someServerIsWorking) {
-          if (start) {
-            this.setState({
-              startingApp: false,
-              serverErrorTries: 1,
-              screen,
-            });
-            this.componentDidMount();
+      const workingServer = await this.checkServer(this.state.server);
+      if (workingServer) {
+        // the server is working -> this error is something not related with the server availability
+        createAlert(
+          this.setBackgroundError,
+          this.addLastSnackbar,
+          title,
+          result,
+          false,
+          this.state.translate,
+          sendEmail,
+          this.state.info.zingolib,
+        );
+        this.setState({ actionButtonsDisabled: false, serverErrorTries: 0, screen });
+      } else {
+        // let's change to another server
+        if (this.state.serverErrorTries === 0) {
+          // first try
+          this.setState({ screen, actionButtonsDisabled: true });
+          this.addLastSnackbar({
+            message: this.state.translate('loadingapp.serverfirsttry') as string,
+            duration: SnackbarDurationEnum.longer,
+          });
+          // a different server.
+          const someServerIsWorking = await this.selectTheBestServer(true);
+          if (someServerIsWorking) {
+            if (start) {
+              this.setState({
+                startingApp: false,
+                serverErrorTries: 1,
+                screen,
+              });
+              this.componentDidMount();
+            } else {
+              createAlert(
+                this.setBackgroundError,
+                this.addLastSnackbar,
+                title,
+                result,
+                false,
+                this.state.translate,
+                sendEmail,
+                this.state.info.zingolib,
+              );
+              this.setState({ actionButtonsDisabled: false, serverErrorTries: 0, screen });
+            }
           } else {
+            createAlert(
+              this.setBackgroundError,
+              this.addLastSnackbar,
+              title,
+              this.state.translate('loadingapp.noservers') as string,
+              false,
+              this.state.translate,
+              sendEmail,
+              this.state.info.zingolib,
+            );
+            this.setState({ actionButtonsDisabled: false, serverErrorTries: 0, screen });
+          }
+        } else {
+          // second try
+          this.addLastSnackbar({
+            message: this.state.translate('loadingapp.serversecondtry') as string,
+            duration: SnackbarDurationEnum.longer,
+          });
+          setTimeout(() => {
             createAlert(
               this.setBackgroundError,
               this.addLastSnackbar,
@@ -830,39 +900,8 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
               this.state.info.zingolib,
             );
             this.setState({ actionButtonsDisabled: false, serverErrorTries: 0, screen });
-          }
-        } else {
-          createAlert(
-            this.setBackgroundError,
-            this.addLastSnackbar,
-            title,
-            this.state.translate('loadingapp.noservers') as string,
-            false,
-            this.state.translate,
-            sendEmail,
-            this.state.info.zingolib,
-          );
-          this.setState({ actionButtonsDisabled: false, serverErrorTries: 0, screen });
+          }, 1000);
         }
-      } else {
-        // second try
-        this.addLastSnackbar({
-          message: this.state.translate('loadingapp.serversecondtry') as string,
-          duration: SnackbarDurationEnum.longer,
-        });
-        setTimeout(() => {
-          createAlert(
-            this.setBackgroundError,
-            this.addLastSnackbar,
-            title,
-            result,
-            false,
-            this.state.translate,
-            sendEmail,
-            this.state.info.zingolib,
-          );
-          this.setState({ actionButtonsDisabled: false, serverErrorTries: 0, screen });
-        }, 1000);
       }
     }
   };
@@ -875,41 +914,60 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
   };
 
   usingCustomServer = async () => {
-    if (!this.state.customServerUri) {
+    if (!this.state.customServerUri && !this.state.customServerOffline) {
       return;
     }
     this.setState({ actionButtonsDisabled: true });
-    const uri: string = parseServerURI(this.state.customServerUri, this.state.translate);
-    const chainName = this.state.customServerChainName;
-    if (uri.toLowerCase().startsWith(GlobalConst.error)) {
-      this.addLastSnackbar({ message: this.state.translate('settings.isuri') as string });
-      this.setState({ actionButtonsDisabled: false });
-      return;
-    }
-
-    this.state.addLastSnackbar({ message: this.state.translate('loadedapp.tryingnewserver') as string });
-
-    const cs = {
-      uri: uri,
-      chainName: chainName,
-      region: '',
-      default: false,
-      latency: null,
-      obsolete: false,
-    } as ServerUrisType;
-    const serverChecked = await selectingServer([cs]);
-    if (serverChecked && serverChecked.latency) {
-      await SettingsFileImpl.writeSettings(SettingsNameEnum.server, { uri, chainName });
+    if (this.state.customServerOffline) {
+      await SettingsFileImpl.writeSettings(SettingsNameEnum.server, {
+        uri: '',
+        chainName: this.state.server.chainName,
+      });
+      await SettingsFileImpl.writeSettings(SettingsNameEnum.selectServer, SelectServerEnum.offline);
       this.setState({
-        server: { uri, chainName },
+        selectServer: SelectServerEnum.offline,
+        server: { uri: '', chainName: this.state.server.chainName },
         customServerShow: false,
         customServerUri: '',
-        customServerChainName: ChainNameEnum.mainChainName,
+        customServerChainName: this.state.server.chainName,
+        customServerOffline: false,
       });
     } else {
-      this.state.addLastSnackbar({
-        message: (this.state.translate('loadedapp.changeservernew-error') as string) + uri,
-      });
+      const uri: string = parseServerURI(this.state.customServerUri, this.state.translate);
+      const chainName = this.state.customServerChainName;
+      if (uri.toLowerCase().startsWith(GlobalConst.error)) {
+        this.addLastSnackbar({ message: this.state.translate('settings.isuri') as string });
+        this.setState({ actionButtonsDisabled: false });
+        return;
+      }
+
+      this.state.addLastSnackbar({ message: this.state.translate('loadedapp.tryingnewserver') as string });
+
+      const cs = {
+        uri: uri,
+        chainName: chainName,
+        region: '',
+        default: false,
+        latency: null,
+        obsolete: false,
+      } as ServerUrisType;
+      const serverChecked = await selectingServer([cs]);
+      if (serverChecked && serverChecked.latency) {
+        await SettingsFileImpl.writeSettings(SettingsNameEnum.server, { uri, chainName });
+        await SettingsFileImpl.writeSettings(SettingsNameEnum.selectServer, SelectServerEnum.custom);
+        this.setState({
+          selectServer: SelectServerEnum.custom,
+          server: { uri, chainName },
+          customServerShow: false,
+          customServerUri: '',
+          customServerChainName: this.state.server.chainName,
+          customServerOffline: false,
+        });
+      } else {
+        this.state.addLastSnackbar({
+          message: (this.state.translate('loadedapp.changeservernew-error') as string) + uri,
+        });
+      }
     }
     this.setState({ actionButtonsDisabled: false });
   };
@@ -923,6 +981,10 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
   };
 
   createNewWallet = (goSeedScreen: boolean = true) => {
+    if (!this.state.netInfo.isConnected || this.state.selectServer === SelectServerEnum.offline) {
+      this.addLastSnackbar({ message: this.state.translate('loadedapp.connection-error') as string });
+      return;
+    }
     this.setState({ actionButtonsDisabled: true });
     setTimeout(async () => {
       let seed: string = await RPCModule.createNewWallet(this.state.server.uri, this.state.server.chainName);
@@ -1124,15 +1186,15 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
   };
 
   customServer = () => {
-    if (this.state.netInfo.isConnected) {
-      this.setState({ customServerShow: true });
-    } else {
-      this.addLastSnackbar({ message: this.state.translate('loadedapp.connection-error') as string });
-    }
+    this.setState({ customServerShow: true });
   };
 
   onPressServerChainName = (chain: ChainNameEnum) => {
     this.setState({ customServerChainName: chain });
+  };
+
+  onPressServerOffline = (value: boolean) => {
+    this.setState({ customServerOffline: value });
   };
 
   addLastSnackbar = (snackbar: SnackbarType) => {
@@ -1198,12 +1260,14 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
       customServerShow,
       customServerUri,
       customServerChainName,
+      customServerOffline,
       snackbars,
       mode,
       firstLaunchingMessage,
       biometricsFailed,
       translate,
       hasRecoveryWalletInfoSaved,
+      selectServer,
     } = this.state;
     const { colors } = this.props.theme;
 
@@ -1312,6 +1376,15 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     )}
                   </>
                 )}
+                {!netInfo.isConnected && hasRecoveryWalletInfoSaved && !actionButtonsDisabled && (
+                  <OptionsMenu
+                    customButton={<FontAwesomeIcon icon={faEllipsisV} color={'#ffffff'} size={40} />}
+                    buttonStyle={{ width: 40, padding: 10, resizeMode: 'contain' }}
+                    destructiveIndex={5}
+                    options={[translate('loadingapp.recoverkeys'), translate('cancel')]}
+                    actions={[() => this.recoverRecoveryWalletInfo(true)]}
+                  />
+                )}
               </View>
               <ScrollView
                 style={{ maxHeight: '100%' }}
@@ -1339,7 +1412,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     />
                   </View>
 
-                  {netInfo.isConnected && (
+                  {selectServer !== SelectServerEnum.offline && (
                     <>
                       <BoldText style={{ fontSize: 15, marginBottom: 3 }}>
                         {`${translate('loadingapp.actualserver') as string} [${
@@ -1348,6 +1421,16 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                       </BoldText>
                       <BoldText style={{ fontSize: 15, marginBottom: 10 }}>{server.uri}</BoldText>
                     </>
+                  )}
+                  {selectServer === SelectServerEnum.offline && (
+                    <View style={{ flexDirection: 'row' }}>
+                      <BoldText style={{ fontSize: 15, marginBottom: 3 }}>
+                        {translate('loadingapp.actualserver') as string}
+                      </BoldText>
+                      <BoldText style={{ fontSize: 15, marginBottom: 3, color: 'red' }}>
+                        {' ' + (translate('settings.server-offline') as string)}
+                      </BoldText>
+                    </View>
                   )}
 
                   {customServerShow && (
@@ -1362,40 +1445,74 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                         justifyContent: 'center',
                         alignItems: 'center',
                       }}>
-                      <ChainTypeToggle
-                        customServerChainName={customServerChainName}
-                        onPress={this.onPressServerChainName}
-                        translate={translate}
-                      />
-                      <View
-                        style={{
-                          borderColor: colors.border,
-                          borderWidth: 1,
-                          marginBottom: 10,
-                          width: '100%',
-                          maxWidth: '100%',
-                          minWidth: '50%',
-                          minHeight: 48,
-                          alignItems: 'center',
-                        }}>
-                        <TextInput
-                          placeholder={GlobalConst.serverPlaceHolder}
-                          placeholderTextColor={colors.placeholder}
+                      {selectServer !== SelectServerEnum.offline && (
+                        <View
                           style={{
-                            color: colors.text,
-                            fontWeight: '600',
-                            fontSize: 18,
-                            minWidth: '90%',
-                            minHeight: 48,
-                            marginLeft: 5,
-                            backgroundColor: 'transparent',
-                          }}
-                          value={customServerUri}
-                          onChangeText={(text: string) => this.setState({ customServerUri: text })}
-                          editable={true}
-                          maxLength={100}
-                        />
-                      </View>
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: 0,
+                            marginBottom: 10,
+                            paddingHorizontal: 5,
+                            paddingVertical: 1,
+                            borderColor: customServerOffline ? colors.primary : colors.zingo,
+                            borderWidth: customServerOffline ? 2 : 1,
+                            borderRadius: 10,
+                            minWidth: 25,
+                            minHeight: 25,
+                          }}>
+                          <TouchableOpacity onPress={() => this.onPressServerOffline(!customServerOffline)}>
+                            <View style={{ flexDirection: 'row', margin: 0, padding: 0 }}>
+                              <FontAwesomeIcon
+                                icon={faWifi}
+                                color={customServerOffline ? 'red' : colors.zingo}
+                                size={18}
+                              />
+                              <FadeText style={{ marginLeft: 10, marginRight: 5 }}>
+                                {translate('settings.server-offline') as string}
+                              </FadeText>
+                            </View>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                      {!customServerOffline && (
+                        <>
+                          <ChainTypeToggle
+                            customServerChainName={customServerChainName}
+                            onPress={this.onPressServerChainName}
+                            translate={translate}
+                            disabled={actionButtonsDisabled}
+                          />
+                          <View
+                            style={{
+                              borderColor: colors.border,
+                              borderWidth: 1,
+                              marginBottom: 10,
+                              width: '100%',
+                              maxWidth: '100%',
+                              minWidth: '50%',
+                              minHeight: 48,
+                              alignItems: 'center',
+                            }}>
+                            <TextInput
+                              placeholder={GlobalConst.serverPlaceHolder}
+                              placeholderTextColor={colors.placeholder}
+                              style={{
+                                color: colors.text,
+                                fontWeight: '600',
+                                fontSize: 18,
+                                minWidth: '90%',
+                                minHeight: 48,
+                                marginLeft: 5,
+                                backgroundColor: 'transparent',
+                              }}
+                              value={customServerUri}
+                              onChangeText={(text: string) => this.setState({ customServerUri: text })}
+                              editable={!actionButtonsDisabled}
+                              maxLength={100}
+                            />
+                          </View>
+                        </>
+                      )}
                       <View style={{ flexDirection: 'row' }}>
                         <Button
                           type={ButtonTypeEnum.Primary}
@@ -1453,33 +1570,48 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     </>
                   )}
 
-                  {netInfo.isConnected && walletExists && (
-                    <View
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'flex-end',
-                        marginHorizontal: 20,
-                        marginBottom: 20,
-                      }}>
+                  {walletExists && (
+                    <>
                       <View
                         style={{
                           display: 'flex',
-                          flexDirection: 'column',
-                          marginTop: 10,
-                          borderColor: colors.primary,
-                          borderWidth: 1,
-                          borderRadius: 5,
-                          padding: 5,
+                          flexDirection: 'row',
+                          alignItems: 'flex-end',
+                          marginHorizontal: 20,
+                          marginBottom: 20,
                         }}>
-                        <BoldText style={{ fontSize: 15, color: colors.primaryDisabled }}>
-                          {translate('loadingapp.noopenwallet-message') as string}
-                        </BoldText>
+                        <View
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            marginTop: 10,
+                            borderColor: colors.primary,
+                            borderWidth: 1,
+                            borderRadius: 5,
+                            padding: 5,
+                          }}>
+                          <BoldText style={{ fontSize: 15, color: colors.primaryDisabled }}>
+                            {translate('loadingapp.noopenwallet-message') as string}
+                          </BoldText>
+                        </View>
                       </View>
-                    </View>
+                      <Button
+                        type={ButtonTypeEnum.Primary}
+                        title={translate('loadingapp.opencurrentwallet') as string}
+                        disabled={actionButtonsDisabled}
+                        onPress={() => {
+                          // to avoid the biometric security
+                          this.setState({
+                            startingApp: false,
+                          });
+                          this.componentDidMount();
+                        }}
+                        style={{ marginBottom: 20 }}
+                      />
+                    </>
                   )}
 
-                  {netInfo.isConnected && (
+                  {netInfo.isConnected && selectServer !== SelectServerEnum.offline && (
                     <Button
                       testID="loadingapp.createnewwallet"
                       type={ButtonTypeEnum.Primary}
@@ -1503,28 +1635,12 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                           this.createNewWallet();
                         }
                       }}
-                      style={{ marginBottom: mode === ModeEnum.advanced ? 10 : 30, marginTop: 10 }}
+                      style={{ marginBottom: 10, marginTop: 10 }}
                     />
                   )}
 
-                  {netInfo.isConnected && walletExists && (
-                    <Button
-                      type={ButtonTypeEnum.Primary}
-                      title={translate('loadingapp.opencurrentwallet') as string}
-                      disabled={actionButtonsDisabled}
-                      onPress={() => {
-                        // to avoid the biometric security
-                        this.setState({
-                          startingApp: false,
-                        });
-                        this.componentDidMount();
-                      }}
-                      style={{ marginBottom: 10 }}
-                    />
-                  )}
-
-                  {netInfo.isConnected && (
-                    <View style={{ marginTop: 20, display: 'flex', alignItems: 'center' }}>
+                  {netInfo.isConnected && selectServer !== SelectServerEnum.offline && (
+                    <View style={{ marginTop: 10, display: 'flex', alignItems: 'center' }}>
                       <Button
                         testID="loadingapp.restorewalletseedufvk"
                         type={ButtonTypeEnum.Secondary}
@@ -1536,7 +1652,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     </View>
                   )}
 
-                  {!netInfo.isConnected && (
+                  {(!netInfo.isConnected || selectServer === SelectServerEnum.offline) && !walletExists && (
                     <View
                       style={{
                         display: 'flex',
@@ -1561,7 +1677,7 @@ export class LoadingAppClass extends Component<LoadingAppClassProps, LoadingAppC
                     </View>
                   )}
 
-                  {netInfo.isConnected && actionButtonsDisabled && (
+                  {actionButtonsDisabled && (
                     <ActivityIndicator size="large" color={colors.primary} style={{ marginVertical: 20 }} />
                   )}
                 </View>

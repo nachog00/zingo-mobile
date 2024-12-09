@@ -443,12 +443,16 @@ class RPCModule internal constructor(private val reactContext: ReactApplicationC
 
     @ReactMethod
     fun doSave(promise: Promise) {
-        promise.resolve(saveWalletFile())
+        thread {
+            promise.resolve(saveWalletFile())
+        }
     }
 
     @ReactMethod
     fun doSaveBackup(promise: Promise) {
-        promise.resolve(saveWalletBackupFile())
+        thread {
+            promise.resolve(saveWalletBackupFile())
+        }
     }
 
     @ReactMethod

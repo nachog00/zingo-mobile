@@ -65,6 +65,7 @@ import {
   ReceivePageStateClass,
   ValueTransferType,
   ValueTransferKindEnum,
+  CurrencyNameEnum,
 } from '../AppState';
 import Utils from '../utils';
 import { ThemeType } from '../types';
@@ -247,7 +248,8 @@ export default function LoadedApp(props: LoadedAppProps) {
       if (
         settings.selectServer === SelectServerEnum.auto ||
         settings.selectServer === SelectServerEnum.custom ||
-        settings.selectServer === SelectServerEnum.list
+        settings.selectServer === SelectServerEnum.list ||
+        settings.selectServer === SelectServerEnum.offline
       ) {
         setSelectServer(settings.selectServer);
       } else {
@@ -443,6 +445,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       insightModalVisible: false,
       addressBookModalVisible: false,
       newServer: {} as ServerType,
+      newSelectServer: null,
       somePending: false,
       scrollToTop: false,
       scrollToBottom: false,
@@ -485,21 +488,21 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
     await this.rpc.configure();
 
     this.appstate = AppState.addEventListener(EventListenerEnum.change, async nextAppState => {
-      //console.log('LOADED', 'prior', this.state.appState, 'next', nextAppState);
+      //console.log('LOADED', 'prior', this.state.appStateStatus, 'next', nextAppState);
+      // let's catch the prior value
+      const priorAppState = this.state.appStateStatus;
       if (Platform.OS === GlobalConst.platformOSios) {
         if (
-          (this.state.appStateStatus === AppStateStatusEnum.inactive && nextAppState === AppStateStatusEnum.active) ||
-          (this.state.appStateStatus === AppStateStatusEnum.active && nextAppState === AppStateStatusEnum.inactive)
+          (priorAppState === AppStateStatusEnum.inactive && nextAppState === AppStateStatusEnum.active) ||
+          (priorAppState === AppStateStatusEnum.active && nextAppState === AppStateStatusEnum.inactive)
         ) {
           //console.log('LOADED SAVED IOS do nothing', nextAppState);
           this.setState({ appStateStatus: nextAppState });
           return;
         }
-        if (
-          this.state.appStateStatus === AppStateStatusEnum.inactive &&
-          nextAppState === AppStateStatusEnum.background
-        ) {
+        if (priorAppState === AppStateStatusEnum.inactive && nextAppState === AppStateStatusEnum.background) {
           //console.log('App LOADED IOS is gone to the background!');
+          this.setState({ appStateStatus: nextAppState });
           // re-activate the interruption sync flag
           await RPC.rpcSetInterruptSyncAfterBatch(GlobalConst.true);
           // setting value for background task Android
@@ -514,13 +517,17 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
           // We need to save the wallet file here because
           // sometimes the App can lose the last synced chunk
           await RPCModule.doSave();
-          this.setState({ appStateStatus: nextAppState });
           return;
         }
       }
+      if (Platform.OS === GlobalConst.platformOSandroid) {
+        if (priorAppState !== nextAppState) {
+          console.log('LOADED SAVED Android', nextAppState);
+          this.setState({ appStateStatus: nextAppState });
+        }
+      }
       if (
-        (this.state.appStateStatus === AppStateStatusEnum.inactive ||
-          this.state.appStateStatus === AppStateStatusEnum.background) &&
+        (priorAppState === AppStateStatusEnum.inactive || priorAppState === AppStateStatusEnum.background) &&
         nextAppState === AppStateStatusEnum.active
       ) {
         //console.log('App LOADED Android & IOS has come to the foreground!');
@@ -553,7 +560,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
           }
         }
       } else if (
-        this.state.appStateStatus === AppStateStatusEnum.active &&
+        priorAppState === AppStateStatusEnum.active &&
         (nextAppState === AppStateStatusEnum.inactive || nextAppState === AppStateStatusEnum.background)
       ) {
         //console.log('App LOADED is gone to the background!');
@@ -576,16 +583,10 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
         }
       } else {
         if (Platform.OS === GlobalConst.platformOSios) {
-          if (this.state.appStateStatus !== nextAppState) {
+          if (priorAppState !== nextAppState) {
             //console.log('LOADED SAVED IOS', nextAppState);
             this.setState({ appStateStatus: nextAppState });
           }
-        }
-      }
-      if (Platform.OS === GlobalConst.platformOSandroid) {
-        if (this.state.appStateStatus !== nextAppState) {
-          //console.log('LOADED SAVED Android', nextAppState);
-          this.setState({ appStateStatus: nextAppState });
         }
       }
     });
@@ -626,11 +627,8 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
         if (isConnected !== state.isConnected) {
           if (!state.isConnected) {
             //console.log('EVENT Loaded: No internet connection.');
-            await this.rpc.clearTimers();
-            this.setSyncingStatus(new SyncingStatusClass());
-            this.addLastSnackbar({
-              message: this.state.translate('loadedapp.connection-error') as string,
-            });
+            //await this.rpc.clearTimers();
+            //this.setSyncingStatus(new SyncingStatusClass());
           } else {
             //console.log('EVENT Loaded: YES internet connection.');
             if (this.rpc.getInRefresh()) {
@@ -977,11 +975,21 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       //console.log('fetch info');
       let newInfo = info;
       // if currencyName is empty,
-      // I need to rescue the last value from the state.
+      // I need to rescue the last value from the state,
+      // or rescue the value from server.chainName.
       if (!newInfo.currencyName) {
         if (this.state.info.currencyName) {
           newInfo.currencyName = this.state.info.currencyName;
+        } else {
+          newInfo.currencyName =
+            this.state.server.chainName === ChainNameEnum.mainChainName ? CurrencyNameEnum.ZEC : CurrencyNameEnum.TAZ;
         }
+      }
+      if (!newInfo.chainName) {
+        newInfo.chainName = this.state.server.chainName;
+      }
+      if (!newInfo.serverUri) {
+        newInfo.serverUri = this.state.server.uri;
       }
       this.setState({ info: newInfo });
     }
@@ -1167,7 +1175,12 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
     this.rpc.fetchWalletSettings();
   };
 
-  setServerOption = async (value: ServerType, toast: boolean, sameServerChainName: boolean): Promise<void> => {
+  setServerOption = async (
+    value: ServerType,
+    selectServer: SelectServerEnum,
+    toast: boolean,
+    sameServerChainName: boolean,
+  ): Promise<void> => {
     // here I know the server was changed, clean all the tasks before anything.
     await this.rpc.clearTimers();
     this.setSyncingStatus(new SyncingStatusClass());
@@ -1185,7 +1198,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       // - the seed exists and the App can open the wallet in the new server.
       //   But I have to restart the sync if needed.
       let result: string = await RPCModule.loadExistingWallet(value.uri, value.chainName);
-      //console.log(result);
+      console.log('load existing wallet', result);
       if (result && !result.toLowerCase().startsWith(GlobalConst.error)) {
         try {
           // here result can have an `error` field for watch-only which is actually OK.
@@ -1196,14 +1209,16 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
           ) {
             // Load the wallet and navigate to the ValueTransfers screen
             //console.log(`wallet loaded ok ${value.uri}`);
-            if (toast) {
+            if (toast && selectServer !== SelectServerEnum.offline) {
               this.addLastSnackbar({
                 message: `${this.state.translate('loadedapp.readingwallet')} ${value.uri}`,
               });
             }
             await SettingsFileImpl.writeSettings(SettingsNameEnum.server, value);
+            await SettingsFileImpl.writeSettings(SettingsNameEnum.selectServer, selectServer);
             this.setState({
               server: value,
+              selectServer: selectServer,
             });
             // the server is changed, the App needs to restart the timeout tasks from the beginning
             await this.rpc.configure();
@@ -1248,7 +1263,9 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       this.fetchWallet();
       this.setState({
         newServer: value as ServerType,
+        newSelectServer: selectServer,
         server: oldSettings.server,
+        selectServer: oldSettings.selectServer,
       });
     }
   };
@@ -1383,6 +1400,14 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
     });
   };
 
+  clearTimers = async () => {
+    await this.rpc.clearTimers();
+  };
+
+  configure = async () => {
+    await this.rpc.configure();
+  };
+
   onClickOKChangeWallet = async (state: any) => {
     const { server } = this.state;
 
@@ -1390,8 +1415,10 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
     // no need to do backups of the wallets.
     let resultStr = '';
     if (server.chainName === ChainNameEnum.mainChainName) {
+      // backup
       resultStr = (await this.rpc.changeWallet()) as string;
     } else {
+      // no backup
       resultStr = (await this.rpc.changeWalletNoBackup()) as string;
     }
 
@@ -1443,13 +1470,23 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
   };
 
   onClickOKServerWallet = async () => {
-    if (this.state.newServer) {
+    if (this.state.newServer && this.state.newSelectServer) {
       const beforeServer = this.state.server;
-      const resultStr: string = await RPCModule.execute(CommandEnum.changeserver, this.state.newServer.uri);
-      if (resultStr.toLowerCase().startsWith(GlobalConst.error)) {
+
+      const resultStrServerPromise = RPCModule.execute(CommandEnum.changeserver, this.state.newServer.uri);
+      const timeoutServerPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Promise changeserver Timeout 30 seconds'));
+        }, 30000);
+      });
+
+      const resultStrServer: string = await Promise.race([resultStrServerPromise, timeoutServerPromise]);
+      //console.log(resultStrServer);
+
+      if (!resultStrServer || resultStrServer.toLowerCase().startsWith(GlobalConst.error)) {
         //console.log(`Error change server ${value} - ${resultStr}`);
         this.addLastSnackbar({
-          message: `${this.state.translate('loadedapp.changeservernew-error')} ${resultStr}`,
+          message: `${this.state.translate('loadedapp.changeservernew-error')} ${resultStrServer}`,
         });
         return;
       } else {
@@ -1457,9 +1494,12 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       }
 
       await SettingsFileImpl.writeSettings(SettingsNameEnum.server, this.state.newServer);
+      await SettingsFileImpl.writeSettings(SettingsNameEnum.selectServer, this.state.newSelectServer);
       this.setState({
         server: this.state.newServer,
+        selectServer: this.state.newSelectServer,
         newServer: {} as ServerType,
+        newSelectServer: null,
       });
 
       await this.rpc.fetchInfoAndServerHeight();
@@ -1593,6 +1633,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       scrollToBottom,
       addresses,
       somePending,
+      selectServer,
     } = this.state;
     const { colors } = this.props.theme;
 
@@ -1677,7 +1718,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
       );
     };
 
-    //console.log('render LoadedAppClass - 3', this.state.netInfo);
+    console.log('render LoadedAppClass - 3', this.state.selectServer, this.state.server);
     //console.log('vt', valueTransfers);
     //console.log('ad', addresses);
     //console.log('ba', totalBalance);
@@ -1980,6 +2021,7 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
                 )}
               </Tab.Screen>
               {!readOnly &&
+                selectServer !== SelectServerEnum.offline &&
                 (mode === ModeEnum.advanced ||
                   (!!totalBalance && totalBalance.spendableOrchard + totalBalance.spendablePrivate > 0) ||
                   (!!totalBalance &&
@@ -2015,6 +2057,8 @@ export class LoadedAppClass extends Component<LoadedAppClassProps, LoadedAppClas
                         setScrollToTop={this.setScrollToTop}
                         setScrollToBottom={this.setScrollToBottom}
                         setServerOption={this.setServerOption}
+                        clearTimers={this.clearTimers}
+                        configure={this.configure}
                       />
                     )}
                   </Tab.Screen>

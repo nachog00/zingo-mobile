@@ -17,14 +17,10 @@ type ScannerAddressProps = {
 
 const ScannerAddress: React.FunctionComponent<ScannerAddressProps> = ({ setAddress, closeModal }) => {
   const context = useContext(ContextAppLoaded);
-  const { translate, netInfo, server, addLastSnackbar, language } = context;
+  const { translate, server, language } = context;
   moment.locale(language);
 
   const validateAddress = async (scannedAddress: string) => {
-    if (!netInfo.isConnected) {
-      addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
-      return;
-    }
     if (scannedAddress.toLowerCase().startsWith(GlobalConst.zcash)) {
       setAddress(scannedAddress);
       closeModal();

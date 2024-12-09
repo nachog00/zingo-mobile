@@ -278,26 +278,60 @@ class RPCModule: NSObject {
     }
   }
 
+  func fnDoSave(_ dict: [AnyHashable: Any]) {
+    if let resolve = dict["resolve"] as? RCTPromiseResolveBlock {
+      do {
+        try self.saveWalletInternal()
+        resolve("true")
+      } catch {
+        NSLog("Saving wallet error: \(error.localizedDescription)")
+        resolve("false")
+      }
+    } else {
+      let err = "Error: [Native] Save wallet. Argument problem."
+      NSLog(err)
+      if let resolve = dict["resolve"] as? RCTPromiseResolveBlock {
+          resolve(err)
+      }
+    }
+  }
+
   @objc(doSave:reject:)
   func doSave(_ resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
-    do {
-      try self.saveWalletInternal()
-      resolve("true")
-    } catch {
-      NSLog("Saving wallet error: \(error.localizedDescription)")
-      resolve("false")
+    let dict: [String: Any] = ["resolve": resolve]
+    DispatchQueue.global().async { [weak self] in
+          if let self = self {
+              self.fnDoSave(dict)
+          }
+      }
+  }
+
+  func fndoSaveBackup(_ dict: [AnyHashable: Any]) {
+    if let resolve = dict["resolve"] as? RCTPromiseResolveBlock {
+      do {
+        try self.saveWalletBackupInternal()
+        resolve("true")
+      } catch {
+        NSLog("Saving wallet backup error: \(error.localizedDescription)")
+        resolve("false")
+      }
+    } else {
+      let err = "Error: [Native] Save wallet backup. Argument problem."
+      NSLog(err)
+      if let resolve = dict["resolve"] as? RCTPromiseResolveBlock {
+          resolve(err)
+      }
     }
   }
 
   @objc(doSaveBackup:reject:)
   func doSaveBackup(_ resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
-    do {
-      try self.saveWalletBackupInternal()
-      resolve("true")
-    } catch {
-      NSLog("Saving wallet backup error: \(error.localizedDescription)")
-      resolve("false")
-    }
+    let dict: [String: Any] = ["resolve": resolve]
+    DispatchQueue.global().async { [weak self] in
+          if let self = self {
+              self.fndoSaveBackup(dict)
+          }
+      }    
   }
 
   func doExecuteOnThread(_ dict: [String: Any]) {

@@ -27,6 +27,7 @@ import {
   ButtonTypeEnum,
   GlobalConst,
   CommandEnum,
+  SelectServerEnum,
 } from '../../app/AppState';
 import { ContextAppLoaded } from '../../app/context';
 import { ThemeType } from '../../app/types';
@@ -62,7 +63,7 @@ type HeaderProps = {
   testID?: string;
   translate?: (key: string) => TranslateType;
   netInfo?: NetInfoType;
-  mode?: ModeEnum.basic | ModeEnum.advanced;
+  mode?: ModeEnum;
   setComputingModalVisible?: (visible: boolean) => void;
   setBackgroundError?: (title: string, error: string) => void;
   noPrivacy?: boolean;
@@ -116,9 +117,10 @@ const Header: React.FunctionComponent<HeaderProps> = ({
     language,
     shieldingAmount,
     navigation,
+    selectServer,
   } = context;
 
-  let translate: (key: string) => TranslateType, netInfo: NetInfoType, mode: ModeEnum.basic | ModeEnum.advanced;
+  let translate: (key: string) => TranslateType, netInfo: NetInfoType, mode: ModeEnum;
   if (translateProp) {
     translate = translateProp;
   } else {
@@ -195,7 +197,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
       }
     };
 
-    if (!readOnly && setShieldingAmount) {
+    if (!readOnly && setShieldingAmount && selectServer !== SelectServerEnum.offline) {
       (async () => {
         let proposeFee = 0;
         let proposeAmount = 0;
@@ -233,14 +235,20 @@ const Header: React.FunctionComponent<HeaderProps> = ({
         //console.log(proposeFee, proposeAmount);
       })();
     }
-  }, [readOnly, setShieldingAmount, totalBalance?.transparentBal, somePending]);
+  }, [readOnly, setShieldingAmount, totalBalance?.transparentBal, somePending, selectServer]);
 
   useEffect(() => {
-    setShowShieldButton(!readOnly && (somePending ? 0 : shieldingAmount) > 0);
-  }, [readOnly, shieldingAmount, somePending]);
+    setShowShieldButton(
+      !readOnly && selectServer !== SelectServerEnum.offline && (somePending ? 0 : shieldingAmount) > 0,
+    );
+  }, [readOnly, shieldingAmount, somePending, selectServer]);
 
   const shieldFunds = async () => {
     if (!setComputingModalVisible || !setBackgroundError || !addLastSnackbar) {
+      return;
+    }
+    if (!netInfo.isConnected || selectServer === SelectServerEnum.offline) {
+      addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
       return;
     }
 
@@ -343,6 +351,8 @@ const Header: React.FunctionComponent<HeaderProps> = ({
       } else {
         animationRef.current?.stop();
       }
+    } else {
+      animationRef.current?.stop();
     }
 
     return () => {
@@ -423,7 +433,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
             justifyContent: 'center',
             backgroundColor: colors.card,
             margin: 0,
-            marginHorizontal: 5,
+            marginRight: 5,
             padding: 0,
             minWidth: 25,
             minHeight: 25,
@@ -462,7 +472,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
           marginHorizontal: 5,
           height: 40,
         }}>
-        {!noSyncingStatus && (
+        {!noSyncingStatus && selectServer !== SelectServerEnum.offline && (
           <>
             {netInfo.isConnected && !!syncingStatus.lastBlockServer && syncingStatus.syncID >= 0 ? (
               <>
@@ -506,7 +516,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
                       </TouchableOpacity>
                     </View>
                   )}
-                {syncingStatus.inProgress && (
+                {syncingStatus.inProgress && blocksRemaining > 0 && (
                   <View
                     style={{
                       alignItems: 'center',
@@ -549,7 +559,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({
               </>
             ) : (
               <>
-                {mode === ModeEnum.advanced && (
+                {netInfo.isConnected && mode === ModeEnum.advanced && (
                   <View
                     style={{
                       alignItems: 'center',
@@ -563,25 +573,57 @@ const Header: React.FunctionComponent<HeaderProps> = ({
                       minWidth: 25,
                       minHeight: 25,
                     }}>
-                    <Animated.View style={{ opacity: opacityValue, margin: 0, padding: 0 }}>
-                      <TouchableOpacity onPress={() => syncingStatusMoreInfoOnClick && syncingStatusMoreInfoOnClick()}>
-                        <FontAwesomeIcon icon={faWifi} color={colors.primaryDisabled} size={18} />
-                      </TouchableOpacity>
-                    </Animated.View>
+                    <TouchableOpacity onPress={() => syncingStatusMoreInfoOnClick && syncingStatusMoreInfoOnClick()}>
+                      <FontAwesomeIcon icon={faWifi} color={colors.primaryDisabled} size={18} />
+                    </TouchableOpacity>
                   </View>
                 )}
               </>
             )}
             {(!netInfo.isConnected || netInfo.type === NetInfoStateType.cellular || netInfo.isConnectionExpensive) && (
-              <>
-                {mode !== ModeEnum.basic && (
+              <View
+                style={{
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: 0,
+                  marginRight: 5,
+                  padding: 0,
+                  minWidth: 25,
+                  minHeight: 25,
+                }}>
+                {mode === ModeEnum.basic ? (
+                  <FontAwesomeIcon icon={faCloudDownload} color={!netInfo.isConnected ? 'red' : 'yellow'} size={20} />
+                ) : (
                   <TouchableOpacity onPress={() => syncingStatusMoreInfoOnClick && syncingStatusMoreInfoOnClick()}>
                     <FontAwesomeIcon icon={faCloudDownload} color={!netInfo.isConnected ? 'red' : 'yellow'} size={20} />
                   </TouchableOpacity>
                 )}
-              </>
+              </View>
             )}
           </>
+        )}
+        {selectServer === SelectServerEnum.offline && (
+          <View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: 0,
+              marginRight: 5,
+              paddingHorizontal: 5,
+              paddingVertical: 1,
+              borderColor: colors.zingo,
+              borderWidth: 1,
+              borderRadius: 10,
+              minWidth: 25,
+              minHeight: 25,
+            }}>
+            <View style={{ flexDirection: 'row', margin: 0, padding: 0 }}>
+              <FontAwesomeIcon icon={faWifi} color={'red'} size={18} />
+              <FadeText style={{ marginLeft: 10, marginRight: 5 }}>
+                {translate('settings.server-offline') as string}
+              </FadeText>
+            </View>
+          </View>
         )}
         {mode !== ModeEnum.basic &&
           !noPrivacy &&

@@ -5,6 +5,7 @@ import org.junit.Test
 import org.junit.experimental.categories.Category
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.facebook.react.bridge.ReactApplicationContext
 
 object Seeds {
     const val ABANDON = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art"
@@ -110,6 +111,9 @@ data class ParseResult (
     val chain_name: String?,
     val address_kind: String?
 )
+
+val reactContext = ReactApplicationContext(MainApplication.getAppContext())
+val rpcModule = RPCModule(reactContext)
 
 @Category(OfflineTest::class)
 class ExecuteAddressesFromSeed {
@@ -451,6 +455,20 @@ class ExecuteSaplingBalanceFromSeed {
         assertThat(balance.verified_sapling_balance).isEqualTo(100000)
         assertThat(balance.spendable_sapling_balance).isEqualTo(100000)
         assertThat(balance.transparent_balance).isEqualTo(0)
+
+        // save the wallet file
+        rpcModule.saveWalletFile()
+
+        // change to Offline mode
+        val changeServerJson:String = uniffi.zingo.executeCommand("changeserver", "")
+        println("\nChange Server:")
+        println(changeServerJson)
+        assertThat(changeServerJson.lowercase().startsWith("error")).isFalse()
+
+        // open the wallet with no server - Offline mode
+        val loadWalletJson: String = rpcModule.loadExistingWalletNative("", "main")
+        println("\nLoad Wallet:")
+        println(loadWalletJson)
     }
 }
 

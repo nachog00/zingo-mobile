@@ -92,7 +92,7 @@ exports[`Component Insight - test Insight - snapshot 1`] = `
                 "flexDirection": "row",
                 "justifyContent": "center",
                 "margin": 0,
-                "marginHorizontal": 5,
+                "marginRight": 5,
                 "minHeight": 25,
                 "minWidth": 25,
                 "padding": 0,

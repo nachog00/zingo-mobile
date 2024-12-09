@@ -29,7 +29,7 @@ const InputTextAddress: React.FunctionComponent<InputTextAddressProps> = ({
   disabled,
 }) => {
   const context = useContext(ContextAppLoaded);
-  const { netInfo, addLastSnackbar, translate, server, language } = context;
+  const { translate, server, language } = context;
   const { colors } = useTheme() as unknown as ThemeType;
   moment.locale(language);
 
@@ -38,10 +38,6 @@ const InputTextAddress: React.FunctionComponent<InputTextAddressProps> = ({
 
   useEffect(() => {
     const parseAddress = async (addr: string): Promise<boolean> => {
-      if (!netInfo.isConnected) {
-        addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
-        return false;
-      }
       return await Utils.isValidAddress(addr, server.chainName);
     };
 
@@ -54,7 +50,7 @@ const InputTextAddress: React.FunctionComponent<InputTextAddressProps> = ({
       setValidAddress(0);
       setError('');
     }
-  }, [addLastSnackbar, address, netInfo.isConnected, server.chainName, setError, translate]);
+  }, [address, server.chainName, setError, translate]);
 
   //console.log('render input text address');
 

@@ -63,7 +63,6 @@ const Confirm: React.FunctionComponent<ConfirmProps> = ({
     uaAddress,
     privacy,
     totalBalance,
-    netInfo,
     addLastSnackbar,
     server,
     security,
@@ -86,11 +85,6 @@ const Confirm: React.FunctionComponent<ConfirmProps> = ({
    * @returns {string} The privacy level.
    */
   const getPrivacyLevel = useCallback(async () => {
-    if (!netInfo.isConnected) {
-      addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
-      return '-';
-    }
-
     let from: PrivacyLevelFromEnum = PrivacyLevelFromEnum.nonePrivacyLevel;
     const totalAmount: number = Utils.parseStringLocaleToNumberFloat(
       Utils.parseNumberFloatToStringLocale(
@@ -218,9 +212,7 @@ const Confirm: React.FunctionComponent<ConfirmProps> = ({
     return '-';
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    addLastSnackbar,
     calculatedFee,
-    netInfo.isConnected,
     sendPageState.toaddr.amount,
     sendPageState.toaddr.to,
     server.chainName,

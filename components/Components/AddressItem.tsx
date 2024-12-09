@@ -12,6 +12,7 @@ import {
   ModeEnum,
   SnackbarDurationEnum,
   RouteEnums,
+  SelectServerEnum,
 } from '../../app/AppState';
 import { useTheme } from '@react-navigation/native';
 import { ThemeType } from '../../app/types';
@@ -57,6 +58,7 @@ const AddressItem: React.FunctionComponent<AddressItemProps> = ({
     mode,
     totalBalance,
     language,
+    selectServer,
   } = context;
   const { colors } = useTheme() as unknown as ThemeType;
   moment.locale(language);
@@ -173,6 +175,7 @@ const AddressItem: React.FunctionComponent<AddressItemProps> = ({
         !addressProtected &&
         contact &&
         !readOnly &&
+        selectServer !== SelectServerEnum.offline &&
         !(
           mode === ModeEnum.basic &&
           totalBalance &&

@@ -33,7 +33,7 @@ type ShowUfvkProps = {
 };
 const ShowUfvk: React.FunctionComponent<ShowUfvkProps> = ({ onClickOK, onClickCancel, action, setPrivacyOption }) => {
   const context = useContext(ContextAppLoaded);
-  const { translate, wallet, server, netInfo, mode, addLastSnackbar, language } = context;
+  const { translate, wallet, server, mode, addLastSnackbar, language } = context;
   const { colors } = useTheme() as unknown as ThemeType;
   moment.locale(language);
 
@@ -146,10 +146,6 @@ const ShowUfvk: React.FunctionComponent<ShowUfvkProps> = ({ onClickOK, onClickCa
           }
           onPress={() => {
             if (!wallet.ufvk) {
-              return;
-            }
-            if (!netInfo.isConnected && times > 0) {
-              addLastSnackbar({ message: translate('loadedapp.connection-error') as string });
               return;
             }
             if (times === 0) {
