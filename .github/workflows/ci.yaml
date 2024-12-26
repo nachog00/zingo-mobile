@@ -9,9 +9,11 @@ on:
 jobs:
   jest-test:
     uses: ./.github/workflows/jest-test.yaml
+    runs-on: self-hosted
 
   create-timestamp:
     uses: ./.github/workflows/create-timestamp.yaml
+    runs-on: ubuntu-latest
 
   create-cache-key:
     uses: ./.github/workflows/create-cache-key.yaml
